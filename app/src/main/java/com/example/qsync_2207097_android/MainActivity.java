@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Intent intent = new Intent(this, QueueList.class);
+        Intent intent = new Intent(this, Home.class);
         startActivity(intent);
     }
     public void gotoReg(View view) {

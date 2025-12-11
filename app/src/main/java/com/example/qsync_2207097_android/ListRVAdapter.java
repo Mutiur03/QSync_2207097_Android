@@ -33,7 +33,6 @@ public class ListRVAdapter extends RecyclerView.Adapter<ListRVAdapter.ViewHolder
         holder.listStart.setText(String.valueOf(item.getId()));
         holder.listSecond.setText(item.getName());
         holder.listWaitingTime.setText(item.getWaitingTime());
-        // Load image with Glide; use a placeholder if image is null/empty
         String url = item.getImage();
         if (url != null && !url.isEmpty()) {
             Glide.with(holder.itemView.getContext())
