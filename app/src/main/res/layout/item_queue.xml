@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Token: A15"
+            android:text="Your Token: 15"
             android:textColor="@color/textSecondary"
             android:textSize="14sp" />
 
@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Position: 5th"
+            android:text="Current Token: 5"
             android:textColor="@color/textSecondary"
             android:textSize="14sp" />
 
@@ -81,7 +81,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:indeterminate="false"
-            android:progress="60"
+            android:progress="33"
             android:progressTint="@color/colorPrimary"
             android:progressBackgroundTint="@color/progressBackground"
             android:contentDescription="Queue progress" />

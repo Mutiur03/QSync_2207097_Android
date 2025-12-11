@@ -30,9 +30,9 @@ public class Home extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
 
         List<QueueItem> sample = new ArrayList<>();
-        sample.add(new QueueItem("Dr. Sultana - Pediatrics", "ER", "Token: C11", "Position: 1st", "Estimated Wait: 3 min", 5));
-        sample.add(new QueueItem("Dr. Rahman - ENT", "OPD", "Token: B02", "Position: 2nd", "Estimated Wait: 8 min", 20));
-        sample.add(new QueueItem("Dr. Khan - Cardiology", "OPD", "Token: A15", "Position: 5th", "Estimated Wait: 25 min", 60));
+        sample.add(new QueueItem("Dr. Sultana - Pediatrics", "ER", "Your Token: 2", "Current Token: 1", "Estimated Wait: 3 min", 50));
+        sample.add(new QueueItem("Dr. Rahman - ENT", "OPD", "Your Token: 5", "Current Token: 2", "Estimated Wait: 8 min", 40));
+        sample.add(new QueueItem("Dr. Khan - Cardiology", "OPD", "Your Token: 15", "Current Token: 5", "Estimated Wait: 25 min", 33));
 
         QueueAdapter adapter = new QueueAdapter(sample);
         rv.setAdapter(adapter);
