@@ -2,6 +2,7 @@ import org.gradle.kotlin.dsl.implementation
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -46,6 +47,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.10.3")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.10.3")
     implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation(libs.firebase.database)
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

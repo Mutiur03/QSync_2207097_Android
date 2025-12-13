@@ -25,6 +25,14 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        String savedEmail = prefs.getString("email", null);
+        String savedPassword = prefs.getString("password", null);
+        if (savedEmail != null && savedPassword != null) {
+            Intent intent = new Intent(this, Home.class);
+            startActivity(intent);
+            finish();
+        }
     }
     public void gotoList(View view) {
         EditText emailEt = findViewById(R.id.editTextText2);
