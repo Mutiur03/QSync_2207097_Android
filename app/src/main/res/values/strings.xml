@@ -1,5 +1,20 @@
 <resources>
     <string name="app_name">QSync_2207097_Android</string>
     <string name="default_web_client_id">257459547366-rh8u794m9tj7jl3btpngsrqa0ngeb8r2.apps.googleusercontent.com</string>
-
+    <string name="fab_add_queue">Add queue</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="join_title">Join a Queue</string>
+    <string name="select_a_doctor_title">Select a doctor</string>
+    <string name="select_a_doctor_message">Please select a doctor before joining.</string>
+    <string name="doctor_label">Doctor: %1$s</string>
+    <string name="doctor_label_empty">Doctor: —</string>
+    <string name="department_label">Department: %1$s</string>
+    <string name="department_label_empty">Department: —</string>
+    <string name="est_wait">Est. wait: ~%1$d min</string>
+    <string name="est_wait_empty">Est. wait: —</string>
+    <string name="preview_position">Preview position: #%1$d</string>
+    <string name="preview_position_empty">Preview position: —</string>
+    <string name="confirm_join_title">Confirm Join</string>
+    <string name="joined_title">Joined</string>
+    <string name="joined_message">You\'ve successfully joined the queue.</string>
 </resources>

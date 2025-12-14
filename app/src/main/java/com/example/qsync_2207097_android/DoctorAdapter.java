@@ -15,10 +15,10 @@ import java.util.List;
 public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder> {
 
     public interface Callback {
-        void onDoctorSelected(JoinQueue.Doctor doctor, int position);
+        void onDoctorSelected(JoinFragment.Doctor doctor, int position);
     }
 
-    private List<JoinQueue.Doctor> items = new ArrayList<>();
+    private List<JoinFragment.Doctor> items = new ArrayList<>();
     private int selectedIndex = RecyclerView.NO_POSITION;
     private final Callback callback;
 
@@ -26,7 +26,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
         this.callback = callback;
     }
 
-    void setItems(List<JoinQueue.Doctor> list) {
+    void setItems(List<JoinFragment.Doctor> list) {
         items.clear();
         if (list != null) items.addAll(list);
         selectedIndex = RecyclerView.NO_POSITION;
@@ -42,7 +42,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        JoinQueue.Doctor d = items.get(position);
+        JoinFragment.Doctor d = items.get(position);
         holder.name.setText(d.name);
         holder.specialty.setText(d.specialty + " • " + d.years + " yrs");
         holder.info.setText("Queue: " + d.queueLength + "  •  Est. " + d.estimatedWaitMinutes + " min");
