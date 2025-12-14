@@ -17,4 +17,12 @@
     <string name="confirm_join_title">Confirm Join</string>
     <string name="joined_title">Joined</string>
     <string name="joined_message">You\'ve successfully joined the queue.</string>
+
+    <!-- Admin login strings -->
+    <string name="admin_login_title">Admin Login</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Log In</string>
+    <string name="logout_button">Log out</string>
+    <string name="welcome_admin">Welcome, Admin</string>
 </resources>

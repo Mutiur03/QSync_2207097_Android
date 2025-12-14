@@ -9,14 +9,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class HomeFragment extends Fragment {
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+    FirebaseUser user = auth.getCurrentUser();
+    TextView tvGreeting=null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -27,13 +34,11 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         BottomNavigationView bottomNav =
                 requireActivity().findViewById(R.id.bottomNav);
         if (bottomNav != null) {
             bottomNav.getMenu().findItem(R.id.home).setChecked(true);
         }
-
         RecyclerView rv = view.findViewById(R.id.rvQueues);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         List<QueueItem> sample = new ArrayList<>();
@@ -42,7 +47,6 @@ public class HomeFragment extends Fragment {
         sample.add(new QueueItem("Dr. Khan - Cardiology", "OPD", "Your Token: 15", "Current Token: 5", "Estimated Wait: 25 min", 33));
         QueueAdapter adapter = new QueueAdapter(sample);
         rv.setAdapter(adapter);
-
         FloatingActionButton fab = view.findViewById(R.id.fabAddQueue);
         fab.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -52,6 +56,8 @@ public class HomeFragment extends Fragment {
                 bottomNav.getMenu().findItem(R.id.join).setChecked(true);
             }
         });
+        tvGreeting=view.findViewById(R.id.tvGreeting);
+        tvGreeting.setText("Hello "+user.getDisplayName());
     }
 
 }

@@ -178,4 +178,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, UserReg.class);
         startActivity(intent);
     }
+    public void gotoAdminLogin(View view) {
+        Intent intent = new Intent(this, AdminLogin.class);
+        startActivity(intent);
+    }
 }

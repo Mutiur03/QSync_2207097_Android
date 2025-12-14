@@ -14,8 +14,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QSync_2207097_Android">
         <activity
-            android:name=".JoinQueue"
+            android:name=".AdminLogin"
             android:exported="false" />
+        <activity
+            android:name=".AdminDashboard"
+            android:exported="false" />
+
         <activity
             android:name=".Menu"
             android:exported="false" />
