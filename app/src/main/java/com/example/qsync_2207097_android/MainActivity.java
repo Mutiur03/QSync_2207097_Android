@@ -13,15 +13,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth auth;
@@ -61,8 +58,43 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(this, MainActivity.class));
                         finish();
                     });
-            startActivity(new Intent(this, Menu.class));
-            finish();
+            AlertDialog progressDialog = new AlertDialog.Builder(this)
+                    .setView(new ProgressBar(this))
+                    .setCancelable(false)
+                    .create();
+            progressDialog.show();
+
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("admins")
+                    .child(currentUser.getUid());
+            ref.get()
+                    .addOnCompleteListener(adminCheckTask -> {
+                        progressDialog.dismiss();
+                        if (!adminCheckTask.isSuccessful()) {
+                            String msg = adminCheckTask.getException() != null ? adminCheckTask.getException().getMessage() : "Failed to check admin role";
+                            Toast.makeText(this, "Database check failed: " + msg, Toast.LENGTH_LONG).show();
+                            auth.signOut();
+                            startActivity(new Intent(this, MainActivity.class));
+                            finish();
+                            return;
+                        }
+                        DataSnapshot snapshot = adminCheckTask.getResult();
+                        if (snapshot.exists() && "admin".equals(snapshot.child("role").getValue(String.class))) {
+                            startActivity(new Intent(this, AdminDashboard.class));
+                            finish();
+                        }
+                        else{
+                            startActivity(new Intent(this, Menu.class));
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(this, "Database error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        auth.signOut();
+                        startActivity(new Intent(this, MainActivity.class));
+                        finish();
+                    });
+
         } else if (currentUser != null && !currentUser.isEmailVerified()) {
             Toast.makeText(this, "Please verify your email address before continuing", Toast.LENGTH_LONG).show();
         }
@@ -158,9 +190,23 @@ public class MainActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null && user.isEmailVerified()) {
-                            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(this, Menu.class));
-                            finish();
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("admins")
+                                    .child(user.getUid());
+                            ref.get().addOnCompleteListener(adminCheckTask -> {
+
+                                DataSnapshot snapshot = adminCheckTask.getResult();
+                                if (snapshot.exists() && "admin".equals(snapshot.child("role").getValue(String.class))) {
+                                    Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(this, AdminDashboard.class));
+                                    finish();
+                                }
+                                else{
+                                    Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(this, Menu.class));
+                                    finish();
+                                }
+                            });
+
                         } else if (user != null && !user.isEmailVerified()) {
                             Toast.makeText(this, "Please verify your email before logging in. Check your inbox.", Toast.LENGTH_LONG).show();
                             auth.signOut();

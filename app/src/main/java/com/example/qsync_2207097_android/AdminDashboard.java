@@ -1,30 +1,57 @@
 package com.example.qsync_2207097_android;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
-import com.google.firebase.auth.FirebaseAuth;
+import com.example.qsync_2207097_android.databinding.ActivityAdminDashboardBinding;
 
 public class AdminDashboard extends AppCompatActivity {
+    ActivityAdminDashboardBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_dashboard);
-
-        TextView welcome = findViewById(R.id.textViewAdminWelcome);
-        Button logout = findViewById(R.id.buttonLogout);
-
-        welcome.setText(getString(R.string.welcome_admin));
-
-        logout.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(AdminDashboard.this, AdminLogin.class));
-            finish();
+        EdgeToEdge.enable(this);
+        binding = ActivityAdminDashboardBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
         });
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, new AdminHome())
+                .commitNow();
+
+        binding.adminbottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.home) {
+                replaceFragment(new AdminHome());
+                return true;
+            } else if (id == R.id.join) {
+                replaceFragment(new JoinFragment());
+                return true;
+            } else if (id == R.id.history) {
+                replaceFragment(new HistoryFragment());
+                return true;
+            } else if (id == R.id.profile) {
+                replaceFragment(new ProfileFragment());
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, fragment)
+                .commit();
     }
 }
