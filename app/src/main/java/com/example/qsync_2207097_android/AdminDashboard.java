@@ -35,11 +35,8 @@ public class AdminDashboard extends AppCompatActivity {
             if (id == R.id.home) {
                 replaceFragment(new AdminHome());
                 return true;
-            } else if (id == R.id.join) {
-                replaceFragment(new JoinFragment());
-                return true;
-            } else if (id == R.id.history) {
-                replaceFragment(new HistoryFragment());
+            } else if (id == R.id.manage) {
+                replaceFragment(new ManageFragment());
                 return true;
             } else if (id == R.id.profile) {
                 replaceFragment(new ProfileFragment());

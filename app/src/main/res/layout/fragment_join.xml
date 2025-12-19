@@ -7,20 +7,6 @@
     android:background="@color/bgLight"
     tools:context=".JoinFragment">
 
-<!--    <androidx.appcompat.widget.Toolbar-->
-<!--        android:id="@+id/toolbar"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="56dp"-->
-<!--        android:background="@android:color/white"-->
-<!--        android:elevation="4dp"-->
-<!--        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
-<!--        app:titleTextAppearance="@style/TextAppearance.AppCompat.Title"-->
-<!--        app:title="Join a Queue"-->
-<!--        app:titleTextColor="@android:color/black"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent" />-->
-
     <ScrollView
         android:id="@+id/scroll"
         android:layout_width="0dp"

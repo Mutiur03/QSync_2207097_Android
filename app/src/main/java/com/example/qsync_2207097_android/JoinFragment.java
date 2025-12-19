@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,9 +32,11 @@ public class JoinFragment extends Fragment {
     private TextView tvSummaryDepartment, tvSummaryDoctor, tvSummaryTime, tvSummaryPosition;
     private RecyclerView recyclerDoctors;
 
-    private final Map<String, List<Doctor>> data = new HashMap<>();
+    private final List<Department> departments = new ArrayList<>();
+    private final List<Doctor> currentDoctors = new ArrayList<>();
     private Doctor selectedDoctor;
-    private String selectedDepartment;
+    private String selectedDepartmentId;
+    private DatabaseManager databaseManager;
 
     private DoctorAdapter doctorAdapter;
 
@@ -72,8 +76,8 @@ public class JoinFragment extends Fragment {
         doctorAdapter = new DoctorAdapter((doctor, position) -> {
             selectedDoctor = doctor;
             tvSummaryDoctor.setText(getString(R.string.doctor_label, doctor.name));
-            tvSummaryTime.setText(getString(R.string.est_wait, doctor.estimatedWaitMinutes));
-            tvSummaryPosition.setText(getString(R.string.preview_position, doctor.queueLength + 1));
+            tvSummaryTime.setText(getString(R.string.est_wait, doctor.getEstimatedWaitTime()));
+            tvSummaryPosition.setText(getString(R.string.preview_position, doctor.currentQueueLength + 1));
             btnJoin.setEnabled(true);
         });
 
@@ -81,41 +85,45 @@ public class JoinFragment extends Fragment {
 
         btnJoin.setEnabled(false);
 
-        populateSampleData();
+        databaseManager = DatabaseManager.getInstance();
 
-        List<String> departments = new ArrayList<>();
-        departments.add("Select Department");
-        departments.addAll(data.keySet());
+        loadDepartments();
+
+        List<String> initialDeptList = new ArrayList<>();
+        initialDeptList.add("Loading departments...");
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, departments);
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, initialDeptList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDepartments.setAdapter(adapter);
 
         spinnerDepartments.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                boolean valid = position != 0;
-                String sel = valid ? parent.getItemAtPosition(position).toString() : null;
+                boolean valid = position > 0 && position <= departments.size();
 
-                selectedDepartment = sel;
-
-                tvSummaryDepartment.setText(valid
-                        ? getString(R.string.department_label, sel)
-                        : getString(R.string.department_label_empty));
+                if (valid) {
+                    Department selectedDept = departments.get(position - 1);
+                    selectedDepartmentId = selectedDept.id;
+                    tvSummaryDepartment.setText(getString(R.string.department_label, selectedDept.name));
+                    loadDoctorsForDepartment(selectedDept.id);
+                } else {
+                    selectedDepartmentId = null;
+                    tvSummaryDepartment.setText(getString(R.string.department_label_empty));
+                    currentDoctors.clear();
+                    doctorAdapter.setItems(currentDoctors);
+                }
 
                 selectedDoctor = null;
                 tvSummaryDoctor.setText(getString(R.string.doctor_label_empty));
                 tvSummaryTime.setText(getString(R.string.est_wait_empty));
                 tvSummaryPosition.setText(getString(R.string.preview_position_empty));
-
-                populateDoctorsForDepartment(sel);
                 btnJoin.setEnabled(false);
             }
 
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {
-                selectedDepartment = null;
+                selectedDepartmentId = null;
                 btnJoin.setEnabled(false);
             }
         });
@@ -133,41 +141,90 @@ public class JoinFragment extends Fragment {
         });
     }
 
-    private void populateSampleData() {
-        List<Doctor> cardiology = new ArrayList<>();
-        cardiology.add(new Doctor("Dr. Amina Khan", "Cardiologist", 6, 25));
-        cardiology.add(new Doctor("Dr. Sameer Patel", "Cardiologist", 3, 18));
+    private void loadDepartments() {
+        databaseManager.loadDepartments(new DatabaseManager.DepartmentLoadCallback() {
+            @Override
+            public void onDepartmentsLoaded(List<Department> loadedDepartments) {
+                if (!isAdded()) return;
 
-        List<Doctor> dermatology = new ArrayList<>();
-        dermatology.add(new Doctor("Dr. Sara Gomez", "Dermatologist", 4, 10));
-        dermatology.add(new Doctor("Dr. Hana Park", "Dermatologist", 2, 8));
+                departments.clear();
+                departments.addAll(loadedDepartments);
+                List<String> deptNames = new ArrayList<>();
+                deptNames.add("Select Department");
+                for (Department dept : departments) {
+                    deptNames.add(dept.name);
+                }
 
-        data.put("Cardiology", cardiology);
-        data.put("Dermatology", dermatology);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_spinner_item,
+                    deptNames
+                );
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                Spinner spinnerDepartments = requireView().findViewById(R.id.spinner_departments);
+                spinnerDepartments.setAdapter(adapter);
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Error")
+                        .setMessage("Failed to load departments: " + error)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+            }
+        });
     }
 
-    private void populateDoctorsForDepartment(String department) {
-        if (department == null) {
-            doctorAdapter.setItems(new ArrayList<>());
+    private void loadDoctorsForDepartment(String departmentId) {
+        if (departmentId == null) {
+            currentDoctors.clear();
+            doctorAdapter.setItems(currentDoctors);
             return;
         }
 
-        List<Doctor> src = data.get(department);
-        if (src == null) {
-            doctorAdapter.setItems(new ArrayList<>());
-            return;
-        }
+        databaseManager.loadDoctorsByDepartment(departmentId, new DatabaseManager.DoctorLoadCallback() {
+            @Override
+            public void onDoctorsLoaded(List<Doctor> loadedDoctors) {
+                if (!isAdded()) return;
 
-        List<Doctor> docs = new ArrayList<>(src);
-        docs.sort(Comparator.comparingInt(d -> d.estimatedWaitMinutes));
-        doctorAdapter.setItems(docs);
-        recyclerDoctors.scrollToPosition(0);
+                currentDoctors.clear();
+                currentDoctors.addAll(loadedDoctors);
+
+                currentDoctors.sort(Comparator.comparingInt(Doctor::getEstimatedWaitTime));
+
+                doctorAdapter.setItems(currentDoctors);
+                recyclerDoctors.scrollToPosition(0);
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Error")
+                        .setMessage("Failed to load doctors: " + error)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+            }
+        });
     }
 
     private void showConfirmation() {
-        String msg = getString(R.string.department_label, selectedDepartment == null ? "" : selectedDepartment) + "\n" +
+        String departmentName = "";
+        for (Department dept : departments) {
+            if (dept.id.equals(selectedDepartmentId)) {
+                departmentName = dept.name;
+                break;
+            }
+        }
+
+        String msg = getString(R.string.department_label, departmentName) + "\n" +
                 getString(R.string.doctor_label, selectedDoctor == null ? "" : selectedDoctor.name) + "\n" +
-                getString(R.string.est_wait, selectedDoctor == null ? 0 : selectedDoctor.estimatedWaitMinutes);
+                getString(R.string.est_wait, selectedDoctor == null ? 0 : selectedDoctor.getEstimatedWaitTime());
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.confirm_join_title)
@@ -178,37 +235,69 @@ public class JoinFragment extends Fragment {
     }
 
     private void performJoin() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle(R.string.joined_title)
-                .setMessage(R.string.joined_message)
-                .setPositiveButton(android.R.string.ok, (d, w) -> {
-                    requireActivity().getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.frame, new HomeFragment())
-                            .commit();
-
-                    BottomNavigationView bottomNav =
-                            requireActivity().findViewById(R.id.bottomNav);
-                    if (bottomNav != null) {
-                        bottomNav.getMenu().findItem(R.id.home).setChecked(true);
-                    }
-                })
-                .show();
-    }
-
-    public static class Doctor {
-        String name;
-        String specialty;
-        int queueLength;
-        int estimatedWaitMinutes;
-        int years;
-
-        public Doctor(String name, String specialty, int queueLength, int estimatedWaitMinutes) {
-            this.name = name;
-            this.specialty = specialty;
-            this.queueLength = queueLength;
-            this.estimatedWaitMinutes = estimatedWaitMinutes;
-            this.years = 0;
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Authentication Required")
+                    .setMessage("Please log in to join the queue")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            return;
         }
+
+        if (selectedDoctor == null) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Error")
+                    .setMessage("Please select a doctor")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            return;
+        }
+
+        AlertDialog loadingDialog = new AlertDialog.Builder(requireContext())
+                .setTitle("Joining Queue")
+                .setMessage("Please wait...")
+                .setCancelable(false)
+                .create();
+        loadingDialog.show();
+
+        databaseManager.joinQueue(selectedDoctor.id, currentUser.getUid(), new DatabaseManager.QueueJoinCallback() {
+            @Override
+            public void onQueueJoined(String queueId, int position) {
+                if (!isAdded()) return;
+
+                loadingDialog.dismiss();
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.joined_title)
+                        .setMessage("Successfully joined the queue!\nYour position: " + position)
+                        .setPositiveButton(android.R.string.ok, (d, w) -> {
+                            requireActivity().getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.frame, new HomeFragment())
+                                    .commit();
+
+                            BottomNavigationView bottomNav =
+                                    requireActivity().findViewById(R.id.bottomNav);
+                            if (bottomNav != null) {
+                                bottomNav.getMenu().findItem(R.id.home).setChecked(true);
+                            }
+                        })
+                        .show();
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+
+                loadingDialog.dismiss();
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Error")
+                        .setMessage("Failed to join queue: " + error)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+            }
+        });
     }
 }

@@ -35,6 +35,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ManageDepartmentsActivity" android:exported="true" />
+        <activity android:name=".ManageDoctorsActivity" android:exported="true" />
+
     </application>
 
 </manifest>

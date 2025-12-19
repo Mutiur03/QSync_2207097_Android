@@ -15,10 +15,10 @@ import java.util.List;
 public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder> {
 
     public interface Callback {
-        void onDoctorSelected(JoinFragment.Doctor doctor, int position);
+        void onDoctorSelected(Doctor doctor, int position);
     }
 
-    private List<JoinFragment.Doctor> items = new ArrayList<>();
+    private List<Doctor> items = new ArrayList<>();
     private int selectedIndex = RecyclerView.NO_POSITION;
     private final Callback callback;
 
@@ -26,7 +26,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
         this.callback = callback;
     }
 
-    void setItems(List<JoinFragment.Doctor> list) {
+    void setItems(List<Doctor> list) {
         items.clear();
         if (list != null) items.addAll(list);
         selectedIndex = RecyclerView.NO_POSITION;
@@ -42,10 +42,11 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        JoinFragment.Doctor d = items.get(position);
+        Doctor d = items.get(position);
         holder.name.setText(d.name);
-        holder.specialty.setText(d.specialty + " • " + d.years + " yrs");
-        holder.info.setText("Queue: " + d.queueLength + "  •  Est. " + d.estimatedWaitMinutes + " min");
+        holder.specialty.setText(d.specialty + " • " + d.yearsOfExperience + " years");
+        holder.queueInfo.setText("Queue: " + d.currentQueueLength + " patients");
+        holder.waitTime.setText("Est. " + d.getEstimatedWaitTime() + " min");
         holder.itemView.setBackgroundColor(selectedIndex == position ? Color.parseColor("#E3F2FD") : Color.TRANSPARENT);
         holder.itemView.setOnClickListener(v -> {
             int previous = selectedIndex;
@@ -62,13 +63,14 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView name, specialty, info;
+        TextView name, specialty, queueInfo, waitTime;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.doc_name);
             specialty = itemView.findViewById(R.id.doc_specialty);
-            info = itemView.findViewById(R.id.doc_queue_info);
+            queueInfo = itemView.findViewById(R.id.doc_queue_info);
+            waitTime = itemView.findViewById(R.id.doc_wait_time);
         }
     }
 }
