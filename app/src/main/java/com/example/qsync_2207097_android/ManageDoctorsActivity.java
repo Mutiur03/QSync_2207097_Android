@@ -30,12 +30,11 @@ import java.util.List;
 
 public class ManageDoctorsActivity extends AppCompatActivity implements ManageDoctorAdapter.Callback {
 
-    private RecyclerView recyclerView;
     private ManageDoctorAdapter adapter;
     private DatabaseReference docRef;
     private DatabaseReference deptRef;
-    private List<Department> departments = new ArrayList<>();
-    private List<Doctor> doctors = new ArrayList<>();
+    private final List<Department> departments = new ArrayList<>();
+    private final List<Doctor> doctors = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,7 +51,7 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
         docRef = db.getReference("doctors");
         deptRef = db.getReference("departments");
 
-        recyclerView = findViewById(R.id.doc_recycler);
+        RecyclerView recyclerView = findViewById(R.id.doc_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ManageDoctorAdapter(this);
         recyclerView.setAdapter(adapter);
@@ -66,7 +65,7 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.manage_doctors_menu, menu);
+        getMenuInflater().inflate(R.menu.menu_manage_doctors, menu);
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) searchItem.getActionView();
@@ -147,7 +146,13 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        for (Department d : departments) spinnerAdapter.add(d.name + " (" + d.id + ")");
+        for (Department d : departments) {
+            spinnerAdapter.add(
+                    d.name + (d.description != null && !d.description.isEmpty()
+                            ? " (" + d.description + ")"
+                            : "")
+            );
+        }
         deptSpinner.setAdapter(spinnerAdapter);
 
         new AlertDialog.Builder(this)
@@ -168,11 +173,9 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
 
                     int exp = 0;
                     if (!expStr.isEmpty()) {
-                        try {
+
                             exp = Integer.parseInt(expStr);
-                        } catch (NumberFormatException ex) {
-                            exp = 0;
-                        }
+
                     }
 
                     String deptId = departments.get(deptIndex).id;
@@ -192,7 +195,7 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
                 .setItems(items, (dialog, which) -> {
                     if (which == 0) showEditDoctorDialog(doctor);
                     else {
-                        if (doctor.id != null) docRef.child(doctor.id).removeValue();
+                        showDeleteConfirmationDialog(doctor);
                     }
                 })
                 .show();
@@ -242,11 +245,9 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
 
                     int exp = 0;
                     if (!expStr.isEmpty()) {
-                        try {
+
                             exp = Integer.parseInt(expStr);
-                        } catch (NumberFormatException ex) {
-                            exp = 0;
-                        }
+
                     }
 
                     doctor.name = n;
@@ -260,13 +261,21 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    private void showDeleteConfirmationDialog(Doctor doctor) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Doctor")
+                .setMessage("Are you sure you want to delete '" + doctor.name + "'? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    if (doctor.id != null) {
+                        docRef.child(doctor.id).removeValue()
+                                .addOnSuccessListener(aVoid ->
+                                        Toast.makeText(this, "Doctor deleted successfully", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this, "Failed to delete doctor", Toast.LENGTH_SHORT).show());
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
+
 }

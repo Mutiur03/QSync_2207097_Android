@@ -16,7 +16,7 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.Vi
 
     public interface Callback {
         void onDepartmentSelected(Department department, int position);
-        void onDepartmentMenuClick(Department department, int position, View anchorView);
+
     }
 
     private final Callback callback;
@@ -55,12 +55,11 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.Vi
         }
 
         holder.itemView.setOnClickListener(v -> {
-            if (callback != null) callback.onDepartmentSelected(d, position);
+            if (callback != null) {
+                callback.onDepartmentSelected(d, position);
+            }
         });
 
-        holder.departmentMenu.setOnClickListener(v -> {
-            if (callback != null) callback.onDepartmentMenuClick(d, position, v);
-        });
     }
 
     @Override
@@ -70,7 +69,7 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.Vi
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView departmentName, departmentId, departmentStats;
-        ImageView departmentIcon, departmentMenu;
+        ImageView departmentIcon;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -78,7 +77,6 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.Vi
             departmentId = itemView.findViewById(R.id.department_id);
             departmentStats = itemView.findViewById(R.id.department_stats);
             departmentIcon = itemView.findViewById(R.id.department_icon);
-            departmentMenu = itemView.findViewById(R.id.department_menu);
         }
     }
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/textTokenNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="T000"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginEnd="12dp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textPatientName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Patient Name"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/textQueuePosition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Position: 1"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textQueueStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Waiting"
+        android:textSize="12sp"
+        android:padding="6dp"
+        android:layout_marginEnd="8dp" />
+
+    <Button
+        android:id="@+id/buttonChangeStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change"
+        android:textSize="12sp" />
+
+</LinearLayout>
+

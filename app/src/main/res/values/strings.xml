@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">QSync_2207097_Android</string>
+    <string name="app_name">QSync</string>
     <string name="default_web_client_id">257459547366-rh8u794m9tj7jl3btpngsrqa0ngeb8r2.apps.googleusercontent.com</string>
     <string name="fab_add_queue">Add queue</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -24,4 +24,12 @@
     <string name="logout_button">Log out</string>
     <string name="welcome_admin">Welcome, Admin</string>
     <string name="add">Add</string>
+    <string name="symptoms_label">Symptoms/Reason for Visit</string>
+    <string name="symptoms_hint">Describe your symptoms or reason for visit</string>
+    <string name="priority_label">Priority</string>
+    <string name="priority_normal">Normal</string>
+    <string name="priority_urgent">Urgent</string>
+    <string name="priority_emergency">Emergency</string>
+    <string name="symptoms_required">Please describe your symptoms or reason for visit</string>
+    <string name="patient_details_title">Patient Details</string>
 </resources>

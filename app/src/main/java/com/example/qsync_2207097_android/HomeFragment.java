@@ -88,7 +88,7 @@ public class HomeFragment extends Fragment {
                         userQueues.clear();
 
                         for (DataSnapshot queueSnapshot : snapshot.getChildren()) {
-                            DatabaseManager.QueueEntry entry = queueSnapshot.getValue(DatabaseManager.QueueEntry.class);
+                            Queue.QueueEntry entry = queueSnapshot.getValue(Queue.QueueEntry.class);
                             if (entry != null && "waiting".equals(entry.status)) {
                                 loadDoctorInfo(entry);
                             }
@@ -102,7 +102,7 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-    private void loadDoctorInfo(DatabaseManager.QueueEntry queueEntry) {
+    private void loadDoctorInfo(Queue.QueueEntry queueEntry) {
         DatabaseReference doctorRef = FirebaseDatabase.getInstance().getReference("doctors")
                 .child(queueEntry.doctorId);
 
@@ -122,7 +122,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void loadDepartmentInfo(DatabaseManager.QueueEntry queueEntry, Doctor doctor) {
+    private void loadDepartmentInfo(Queue.QueueEntry queueEntry, Doctor doctor) {
         DatabaseReference deptRef = FirebaseDatabase.getInstance().getReference("departments")
                 .child(doctor.departmentId);
 

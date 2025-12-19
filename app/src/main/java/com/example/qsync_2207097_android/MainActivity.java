@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 //        findViewById(R.id.btnGoogleSignIn).setOnClickListener(v -> signIn());
 //
         FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null && currentUser.isEmailVerified()) {
+        if (currentUser != null) {
             currentUser.getIdToken(true).addOnFailureListener(
                     e -> {
                         Toast.makeText(this, "Failed to refresh ID token", Toast.LENGTH_SHORT).show();
@@ -95,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
                         finish();
                     });
 
-        } else if (currentUser != null && !currentUser.isEmailVerified()) {
-            Toast.makeText(this, "Please verify your email address before continuing", Toast.LENGTH_LONG).show();
         }
     }
 //    private void signIn() {
@@ -189,27 +187,24 @@ public class MainActivity extends AppCompatActivity {
                     view.setEnabled(true);
                     if (task.isSuccessful()) {
                         FirebaseUser user = auth.getCurrentUser();
-                        if (user != null && user.isEmailVerified()) {
-                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("admins")
-                                    .child(user.getUid());
-                            ref.get().addOnCompleteListener(adminCheckTask -> {
-
-                                DataSnapshot snapshot = adminCheckTask.getResult();
-                                if (snapshot.exists() && "admin".equals(snapshot.child("role").getValue(String.class))) {
-                                    Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(this, AdminDashboard.class));
-                                    finish();
-                                }
-                                else{
+                        if (user != null) {
+//                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("admins")
+//                                    .child(user.getUid());
+//                            ref.get().addOnCompleteListener(adminCheckTask -> {
+//
+//                                DataSnapshot snapshot = adminCheckTask.getResult();
+//                                if (snapshot.exists() && "admin".equals(snapshot.child("role").getValue(String.class))) {
+//                                    Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show();
+//                                    startActivity(new Intent(this, AdminDashboard.class));
+//                                    finish();
+//                                }
+//                                else{
                                     Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(this, Menu.class));
                                     finish();
-                                }
-                            });
+//                                }
+//                            });
 
-                        } else if (user != null && !user.isEmailVerified()) {
-                            Toast.makeText(this, "Please verify your email before logging in. Check your inbox.", Toast.LENGTH_LONG).show();
-                            auth.signOut();
                         } else {
                             Toast.makeText(this, "Login failed: unknown user state", Toast.LENGTH_SHORT).show();
                         }

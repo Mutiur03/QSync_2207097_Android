@@ -1,7 +1,6 @@
 package com.example.qsync_2207097_android;
 
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.PopupMenu;
@@ -15,6 +14,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -102,7 +102,7 @@ public class ManageDepartmentsActivity extends AppCompatActivity implements Depa
                         return;
                     }
                     DatabaseReference newRef = ref.push();
-                    Department d = new Department(newRef.getKey(), name, description);
+                    Department d = new Department(name, description);
                     newRef.setValue(d);
                     Toast.makeText(this, "Department added successfully", Toast.LENGTH_SHORT).show();
                 })
@@ -112,28 +112,19 @@ public class ManageDepartmentsActivity extends AppCompatActivity implements Depa
 
     @Override
     public void onDepartmentSelected(Department department, int position) {
-        Toast.makeText(this, "Selected: " + department.name, Toast.LENGTH_SHORT).show();
+        String[] items = {"Edit", "Delete"};
+        new AlertDialog.Builder(this)
+                .setTitle(department.name)
+                .setItems(items, (dialog, which) -> {
+                    if (which == 0) showEditDepartmentDialog(department);
+                    else {
+                        showDeleteConfirmationDialog(department);
+                    }
+                })
+                .show();
     }
 
-    @Override
-    public void onDepartmentMenuClick(Department department, int position, View anchorView) {
-        PopupMenu popup = new PopupMenu(this, anchorView);
-        popup.getMenuInflater().inflate(R.menu.department_menu, popup.getMenu());
 
-        popup.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.action_edit) {
-                showEditDepartmentDialog(department);
-                return true;
-            } else if (id == R.id.action_delete) {
-                showDeleteConfirmationDialog(department);
-                return true;
-            }
-            return false;
-        });
-
-        popup.show();
-    }
 
     private void showEditDepartmentDialog(Department department) {
         final EditText nameInput = new EditText(this);
@@ -161,10 +152,8 @@ public class ManageDepartmentsActivity extends AppCompatActivity implements Depa
                         return;
                     }
                     if (department.id != null) {
-                        ref.child(department.id).child("name").setValue(name);
-                        if (!description.isEmpty()) {
-                            ref.child(department.id).child("description").setValue(description);
-                        }
+                        Task<Void> name1 = ref.child(department.id).child("name").setValue(name);
+                        ref.child(department.id).child("description").setValue(description);
                         Toast.makeText(this, "Department updated successfully", Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -189,12 +178,4 @@ public class ManageDepartmentsActivity extends AppCompatActivity implements Depa
                 .show();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }

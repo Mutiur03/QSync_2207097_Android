@@ -13,12 +13,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class UserReg extends AppCompatActivity {
     private FirebaseAuth auth;
+    DatabaseReference database=FirebaseDatabase.getInstance().getReference("users");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,20 +95,14 @@ public class UserReg extends AppCompatActivity {
                                     .build();
                             user.updateProfile(profileUpdates)
                                     .addOnCompleteListener(profileTask -> {
-                                        user.sendEmailVerification()
-                                                .addOnCompleteListener(emailTask -> {
-                                                    progressDialog.dismiss();
-                                                    view.setEnabled(true);
-                                                    if (emailTask.isSuccessful()) {
-                                                        Toast.makeText(this, "Registration successful. Verification email sent. Please verify before logging in.", Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(this, "Registration successful", Toast.LENGTH_LONG).show();
+                                                        User newUser=new User(user.getDisplayName(),email);
+                                                        database.child(user.getUid()).setValue(newUser);
                                                         Intent intent = new Intent(this, MainActivity.class);
                                                         startActivity(intent);
                                                         finish();
-                                                    } else {
-                                                        String msg = emailTask.getException() != null ? emailTask.getException().getMessage() : "Failed to send verification email";
-                                                        Toast.makeText(this, "Registered but failed to send verification email: " + msg, Toast.LENGTH_LONG).show();
-                                                    }
-                                                });
+                                                    progressDialog.dismiss();
+                                                    view.setEnabled(true);
                                     });
                         } else {
                             progressDialog.dismiss();

@@ -4,6 +4,7 @@ public class Department {
     public String id;
     public String name;
     public String description;
+    public String specialization;
     public int doctorCount;
     public int activeQueues;
     public boolean isActive;
@@ -14,19 +15,19 @@ public class Department {
         this.createdAt = System.currentTimeMillis();
     }
 
-    public Department(String id, String name) {
-        this.id = id;
+    public Department(String name, String description) {
         this.name = name;
+        this.description = description;
         this.isActive = true;
         this.createdAt = System.currentTimeMillis();
         this.doctorCount = 0;
         this.activeQueues = 0;
     }
 
-    public Department(String id, String name, String description) {
-        this.id = id;
+    public Department(String name, String description, String specialization) {
         this.name = name;
         this.description = description;
+        this.specialization = specialization;
         this.isActive = true;
         this.createdAt = System.currentTimeMillis();
         this.doctorCount = 0;

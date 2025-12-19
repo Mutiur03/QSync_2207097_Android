@@ -76,18 +76,6 @@
 
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/department_menu"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_more_vert"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:padding="4dp"
-            android:contentDescription="More options"
-            app:tint="@color/textSecondary"
-            android:clickable="true"
-            android:focusable="true" />
 
     </LinearLayout>
 
