@@ -117,7 +117,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Change Status"
+        android:text="@string/change_status"
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@android:color/holo_blue_dark"
@@ -127,46 +127,25 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginBottom="16dp">
 
-        <Button
-            android:id="@+id/buttonWaiting"
-            android:layout_width="0dp"
+        <Spinner
+            android:id="@+id/spinnerStatus"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Waiting"
-            android:layout_marginEnd="4dp"
-            style="@style/Widget.AppCompat.Button.Borderless" />
+            android:spinnerMode="dropdown"
+            android:prompt="@string/prompt_select_status"
+            android:entries="@array/queue_status_options"
+            android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/buttonInProgress"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/textSelectedStatus"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="In Progress"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            style="@style/Widget.AppCompat.Button.Borderless" />
-
-        <Button
-            android:id="@+id/buttonCompleted"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Completed"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            style="@style/Widget.AppCompat.Button.Borderless" />
-
-        <Button
-            android:id="@+id/buttonCancelled"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Cancelled"
-            android:layout_marginStart="4dp"
-            style="@style/Widget.AppCompat.Button.Borderless" />
+            android:text="@string/selected_prefix"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray" />
 
     </LinearLayout>
 
@@ -180,7 +159,7 @@
             android:id="@+id/buttonCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:layout_marginEnd="8dp"
             style="@style/Widget.AppCompat.Button.Borderless" />
 
@@ -188,7 +167,7 @@
             android:id="@+id/buttonSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="@string/save"
             style="@style/Widget.AppCompat.Button.Colored" />
 
     </LinearLayout>

@@ -11,6 +11,8 @@ import android.widget.ExpandableListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
+import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -544,39 +546,67 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
         timestamp.setText("Created: " + getFormattedTimestamp(queueItem.timestamp));
         estimatedTime.setText("Estimated Time: " + getFormattedTime(queueItem.estimatedTime));
 
-        Button buttonWaiting = dialogView.findViewById(R.id.buttonWaiting);
-        Button buttonInProgress = dialogView.findViewById(R.id.buttonInProgress);
-        Button buttonCompleted = dialogView.findViewById(R.id.buttonCompleted);
-        Button buttonCancelled = dialogView.findViewById(R.id.buttonCancelled);
+        Spinner spinnerStatus = dialogView.findViewById(R.id.spinnerStatus);
+        TextView textSelectedStatus = dialogView.findViewById(R.id.textSelectedStatus);
         Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
         Button buttonSave = dialogView.findViewById(R.id.buttonSave);
 
         final String[] selectedStatus = {queueItem.status};
 
-        buttonWaiting.setOnClickListener(v -> {
-            selectedStatus[0] = "waiting";
-            highlightSelectedStatus(dialogView, "waiting");
-        });
+        int initialIndex = getStatusIndex(queueItem.status);
+        if (spinnerStatus != null && initialIndex >= 0) {
+            try {
+                spinnerStatus.setSelection(initialIndex);
+            } catch (Exception ignored) {}
+        }
 
-        buttonInProgress.setOnClickListener(v -> {
-            selectedStatus[0] = "in_progress";
-            highlightSelectedStatus(dialogView, "in_progress");
-        });
+        if (textSelectedStatus != null) {
+            String display = getStatusDisplayText(selectedStatus[0]);
+            try {
+                textSelectedStatus.setText(getString(R.string.selected_prefix, display));
+            } catch (Exception e) {
+                textSelectedStatus.setText("Selected: " + display);
+            }
+        }
 
-        buttonCompleted.setOnClickListener(v -> {
-            selectedStatus[0] = "completed";
-            highlightSelectedStatus(dialogView, "completed");
-        });
+        if (spinnerStatus != null) {
+            spinnerStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    switch (position) {
+                        case 0:
+                            selectedStatus[0] = "waiting";
+                            break;
+                        case 1:
+                            selectedStatus[0] = "in_progress";
+                            break;
+                        case 2:
+                            selectedStatus[0] = "completed";
+                            break;
+                        case 3:
+                            selectedStatus[0] = "cancelled";
+                            break;
+                        default:
+                            selectedStatus[0] = queueItem.status;
+                    }
+                    if (textSelectedStatus != null) {
+                        String display = getStatusDisplayText(selectedStatus[0]);
+                        try {
+                            textSelectedStatus.setText(getString(R.string.selected_prefix, display));
+                        } catch (Exception e) {
+                            textSelectedStatus.setText("Selected: " + display);
+                        }
+                    }
+                }
 
-        buttonCancelled.setOnClickListener(v -> {
-            selectedStatus[0] = "cancelled";
-            highlightSelectedStatus(dialogView, "cancelled");
-        });
-
-        highlightSelectedStatus(dialogView, queueItem.status);
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // No-op
+                }
+            });
+        }
 
         buttonCancel.setOnClickListener(v -> dialog.dismiss());
-
         buttonSave.setOnClickListener(v -> {
             updateQueueStatus(queueItem, selectedStatus[0]);
             dialog.dismiss();
@@ -592,51 +622,19 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
     }
 }
 
-    private void highlightSelectedStatus(View dialogView, String selectedStatus) {
-        if (dialogView == null || getContext() == null) return;
-
-        Button buttonWaiting = dialogView.findViewById(R.id.buttonWaiting);
-        Button buttonInProgress = dialogView.findViewById(R.id.buttonInProgress);
-        Button buttonCompleted = dialogView.findViewById(R.id.buttonCompleted);
-        Button buttonCancelled = dialogView.findViewById(R.id.buttonCancelled);
-
-        resetButtonStyle(buttonWaiting);
-        resetButtonStyle(buttonInProgress);
-        resetButtonStyle(buttonCompleted);
-        resetButtonStyle(buttonCancelled);
-
-        Button selectedButton = null;
-        switch (selectedStatus) {
+    private int getStatusIndex(String status) {
+        if (status == null) return 0;
+        switch (status) {
             case "waiting":
-                selectedButton = buttonWaiting;
-                break;
+                return 0;
             case "in_progress":
-                selectedButton = buttonInProgress;
-                break;
+                return 1;
             case "completed":
-                selectedButton = buttonCompleted;
-                break;
+                return 2;
             case "cancelled":
-                selectedButton = buttonCancelled;
-                break;
-        }
-
-        if (selectedButton != null && getContext() != null) {
-            try {
-                selectedButton.setBackgroundColor(androidx.core.content.ContextCompat.getColor(getContext(), android.R.color.holo_blue_light));
-            } catch (Exception e) {
-                selectedButton.setBackgroundColor(0xFF81C784);
-            }
-        }
-    }
-
-    private void resetButtonStyle(Button button) {
-        if (button != null && getContext() != null) {
-            try {
-                button.setBackgroundColor(androidx.core.content.ContextCompat.getColor(getContext(), android.R.color.transparent));
-            } catch (Exception e) {
-                button.setBackgroundColor(0x00000000);
-            }
+                return 3;
+            default:
+                return 0;
         }
     }
 
@@ -787,4 +785,3 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
         return minutes + "m";
     }
 }
-

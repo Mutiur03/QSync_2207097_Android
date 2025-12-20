@@ -1,0 +1,9 @@
+<resources>
+    <string-array name="queue_status_options">
+        <item>Waiting</item>
+        <item>In Progress</item>
+        <item>Completed</item>
+        <item>Cancelled</item>
+    </string-array>
+</resources>
+
