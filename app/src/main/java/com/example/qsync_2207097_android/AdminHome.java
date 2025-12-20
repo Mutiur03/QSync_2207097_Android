@@ -451,7 +451,7 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                 expandableListView.post(() -> {
                     if (departments != null && isAdded()) {
                         for (int i = 0; i < departments.size(); i++) {
-                            expandableListView.expandGroup(i);
+                            expandableListView.collapseGroup(i);
                         }
                     }
                 });
@@ -461,7 +461,7 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                 expandableListView.post(() -> {
                     if (departments != null && isAdded()) {
                         for (int i = 0; i < departments.size(); i++) {
-                            expandableListView.expandGroup(i);
+                            expandableListView.collapseGroup(i);
                         }
                     }
                 });
