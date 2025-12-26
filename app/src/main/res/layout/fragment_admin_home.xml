@@ -178,7 +178,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Department Overview Card containing the ExpandableListView -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="0dp"

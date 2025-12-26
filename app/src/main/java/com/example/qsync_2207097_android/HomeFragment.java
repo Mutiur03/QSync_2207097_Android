@@ -34,6 +34,12 @@ public class HomeFragment extends Fragment {
     QueueAdapter adapter;
     List<QueueItem> userQueues = new ArrayList<>();
 
+    private final String today = getTodayDate();
+    private String getTodayDate() {
+        return new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                .format(new java.util.Date());
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -89,7 +95,8 @@ public class HomeFragment extends Fragment {
 
                         for (DataSnapshot queueSnapshot : snapshot.getChildren()) {
                             Queue.QueueEntry entry = queueSnapshot.getValue(Queue.QueueEntry.class);
-                            if (entry != null && "waiting".equals(entry.status)) {
+                            String date = queueSnapshot.child("date").getValue(String.class);
+                            if (entry != null && "waiting".equals(entry.status) && today.equals(date)) {
                                 loadDoctorInfo(entry);
                             }
                         }

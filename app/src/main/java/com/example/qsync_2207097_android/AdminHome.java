@@ -46,6 +46,8 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
     private ValueEventListener queuesListener;
     private ValueEventListener usersListener;
 
+    private final String today = getTodayDate();
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -366,6 +368,11 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
 
                 int queueCount = 0;
                 for (DataSnapshot queueSnapshot : snapshot.getChildren()) {
+                    String date = queueSnapshot.child("date").getValue(String.class);
+                    if (date == null || !date.equals(today)) {
+                        continue;
+                    }
+
                     AdminQueueItem queueItem = queueSnapshot.getValue(AdminQueueItem.class);
                     if (queueItem != null) {
                         queueItem.id = queueSnapshot.getKey();
@@ -386,7 +393,9 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                 }
 
                 if (queueCount > 0) {
-                    showSuccess("Loaded " + queueCount + " queue items");
+                    showSuccess("Loaded " + queueCount + " queue items for today");
+                } else {
+                    showSuccess("No queues for today");
                 }
 
                 updateQueueCounts();
@@ -601,7 +610,7 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
 
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
-                    // No-op
+                    //
                 }
             });
         }
@@ -783,5 +792,11 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
             return hours + "h " + minutes + "m";
         }
         return minutes + "m";
+    }
+
+    // Added: helper to get today's date in yyyy-MM-dd format
+    private String getTodayDate() {
+        return new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                .format(new java.util.Date());
     }
 }
