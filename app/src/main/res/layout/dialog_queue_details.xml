@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/bgLight">
 
     <TextView
         android:layout_width="match_parent"
@@ -11,7 +12,7 @@
         android:text="Queue Details"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="@color/textPrimary"
         android:gravity="center"
         android:layout_marginBottom="16dp" />
 
@@ -19,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@android:color/white"
+        android:background="@color/cardBackground"
         android:padding="12dp">
 
         <TextView
@@ -28,7 +29,7 @@
             android:text="Patient Information"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@android:color/holo_blue_dark"
+            android:textColor="@color/colorPrimary"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -37,6 +38,7 @@
             android:layout_height="wrap_content"
             android:text="Name: John Doe"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -45,6 +47,7 @@
             android:layout_height="wrap_content"
             android:text="Phone: +1234567890"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -53,6 +56,7 @@
             android:layout_height="wrap_content"
             android:text="Symptoms: Regular checkup"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="12dp" />
 
         <TextView
@@ -61,7 +65,7 @@
             android:text="Queue Information"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@android:color/holo_blue_dark"
+            android:textColor="@color/colorPrimary"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -70,6 +74,7 @@
             android:layout_height="wrap_content"
             android:text="Queue ID: -OgrbimKOiS7ZjAoGhcZ"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="4dp" />
 
 
@@ -79,6 +84,7 @@
             android:layout_height="wrap_content"
             android:text="Position: 1"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -87,6 +93,7 @@
             android:layout_height="wrap_content"
             android:text="Status: Waiting"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -95,6 +102,7 @@
             android:layout_height="wrap_content"
             android:text="Created: 19/12/2025 10:30"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -103,6 +111,7 @@
             android:layout_height="wrap_content"
             android:text="Priority: Emergency"
             android:textSize="14sp"
+            android:textColor="@color/textPrimary"
             android:layout_marginBottom="16dp" />
 
     </LinearLayout>
@@ -113,7 +122,7 @@
         android:text="@string/change_status"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@android:color/holo_blue_dark"
+        android:textColor="@color/colorPrimary"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp" />
 
@@ -138,7 +147,7 @@
             android:layout_height="wrap_content"
             android:text="@string/selected_prefix"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@color/textSecondary" />
 
     </LinearLayout>
 
@@ -154,6 +163,8 @@
             android:layout_height="wrap_content"
             android:text="@string/cancel"
             android:layout_marginEnd="8dp"
+            android:textColor="@color/colorPrimary"
+            android:backgroundTint="@color/colorOnPrimary"
             style="@style/Widget.AppCompat.Button.Borderless" />
 
         <Button
@@ -161,9 +172,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/save"
+            android:textColor="@color/colorOnPrimary"
+            android:backgroundTint="@color/colorPrimary"
             style="@style/Widget.AppCompat.Button.Colored" />
 
     </LinearLayout>
 
 </LinearLayout>
-

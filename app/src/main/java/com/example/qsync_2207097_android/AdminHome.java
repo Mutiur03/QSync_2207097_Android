@@ -584,16 +584,4 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
             return String.valueOf(ts);
         }
     }
-    private String getFormattedTime(Long minutes) {
-        if (minutes == null) return "N/A";
-        try {
-            long m = minutes;
-            long h = m / 60;
-            long rem = m % 60;
-            if (h > 0) return h + "h " + rem + "m";
-            return rem + "m";
-        } catch (Exception e) {
-            return String.valueOf(minutes);
-        }
-    }
 }

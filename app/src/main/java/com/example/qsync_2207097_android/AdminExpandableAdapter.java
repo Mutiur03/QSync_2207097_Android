@@ -224,18 +224,19 @@ public class AdminExpandableAdapter extends BaseExpandableListAdapter {
         return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(new java.util.Date(timestamp));
     }
     private int getStatusColor(String status) {
-        switch (status) {
-            case "waiting":
-                return android.R.color.holo_orange_dark;
-            case "in_progress":
-                return android.R.color.holo_blue_dark;
-            case "completed":
-                return android.R.color.holo_green_dark;
-            case "cancelled":
-                return android.R.color.holo_red_dark;
-            default:
-                return android.R.color.darker_gray;
-        }
+        return android.R.color.white;
+//        switch (status) {
+//            case "waiting":
+//                return android.R.color.holo_orange_dark;
+//            case "in_progress":
+//                return android.R.color.holo_blue_dark;
+//            case "completed":
+//                return android.R.color.holo_green_dark;
+//            case "cancelled":
+//                return android.R.color.holo_red_dark;
+//            default:
+//                return android.R.color.darker_gray;
+//        }
     }
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
