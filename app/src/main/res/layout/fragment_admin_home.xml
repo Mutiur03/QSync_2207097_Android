@@ -48,20 +48,27 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Admin Dashboard"
+                            android:text="Admin"
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:textColor="@color/colorOnPrimary" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Queue Management System"
-                            android:textSize="14sp"
-                            android:textColor="@color/colorOnPrimary"
-                            android:alpha="0.8" />
 
                     </LinearLayout>
+
+                    <Button
+                        android:id="@+id/buttonCompleted"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="Completed"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorPrimary"
+                        android:background="@color/colorOnPrimary"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:minWidth="0dp"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:layout_marginEnd="8dp"/>
 
                     <Button
                         android:id="@+id/buttonRefresh"
@@ -247,7 +254,8 @@
                         android:dividerHeight="1dp"
                         android:groupIndicator="@null"
                         android:childIndicator="@null"
-                        android:padding="8dp" />
+                        android:padding="8dp"
+                        />
 
                     <ProgressBar
                         android:id="@+id/progressBar"

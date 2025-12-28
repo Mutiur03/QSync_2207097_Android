@@ -72,13 +72,6 @@
             android:textSize="14sp"
             android:layout_marginBottom="4dp" />
 
-        <TextView
-            android:id="@+id/textTokenNumber"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Token: A001"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/textQueuePosition"
@@ -105,10 +98,10 @@
             android:layout_marginBottom="4dp" />
 
         <TextView
-            android:id="@+id/textEstimatedTime"
+            android:id="@+id/textPriority"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Estimated Time: 15 minutes"
+            android:text="Priority: Emergency"
             android:textSize="14sp"
             android:layout_marginBottom="16dp" />
 

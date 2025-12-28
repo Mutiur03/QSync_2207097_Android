@@ -10,6 +10,8 @@ public class Doctor {
     public int yearsOfExperience;
     public boolean isAvailable;
     public int currentQueueLength;
+    public int avgTimeMinutes = 15;
+    public String startTime = "09:00";
 
     public Doctor() {}
 
@@ -23,6 +25,8 @@ public class Doctor {
         this.yearsOfExperience = 0;
         this.isAvailable = true;
         this.currentQueueLength = 0;
+        this.avgTimeMinutes = 15;
+        this.startTime = "09:00";
     }
 
     public Doctor(String id, String name, String specialty, String departmentId,
@@ -36,10 +40,15 @@ public class Doctor {
         this.yearsOfExperience = yearsOfExperience;
         this.isAvailable = true;
         this.currentQueueLength = 0;
+        this.avgTimeMinutes = 15;
+        this.startTime = "09:00";
     }
 
     public int getEstimatedWaitTime() {
-        return currentQueueLength * 15;
+        return currentQueueLength * avgTimeMinutes;
+    }
+
+    public int getAvgTimeMinutes() {
+        return avgTimeMinutes;
     }
 }
-

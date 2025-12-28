@@ -13,9 +13,6 @@ public class AdminQueueItem {
     public int position;
     public String status;
     public long timestamp;
-    public long estimatedTime;
-    public long createdAt;
-    public long updatedAt;
     public String symptoms;
     public String priority;
 

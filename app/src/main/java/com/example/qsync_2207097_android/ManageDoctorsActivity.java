@@ -26,7 +26,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ManageDoctorsActivity extends AppCompatActivity implements ManageDoctorAdapter.Callback {
 
@@ -142,6 +144,8 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
         EditText phone = root.findViewById(R.id.input_doc_phone);
         EditText email = root.findViewById(R.id.input_doc_email);
         EditText experience = root.findViewById(R.id.input_doc_experience);
+        EditText avgTime = root.findViewById(R.id.input_doc_avg_time);
+        EditText startTime = root.findViewById(R.id.input_doc_start_time);
         Spinner deptSpinner = root.findViewById(R.id.spinner_dept);
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
@@ -164,6 +168,8 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
                     String p = phone.getText().toString().trim();
                     String e = email.getText().toString().trim();
                     String expStr = experience.getText().toString().trim();
+                    String avgStr = avgTime.getText().toString().trim();
+                    String startStr = startTime.getText().toString().trim();
                     int deptIndex = deptSpinner.getSelectedItemPosition();
 
                     if (n.isEmpty() || s.isEmpty() || deptIndex < 0 || departments.isEmpty()) {
@@ -173,14 +179,19 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
 
                     int exp = 0;
                     if (!expStr.isEmpty()) {
-
-                            exp = Integer.parseInt(expStr);
-
+                        try { exp = Integer.parseInt(expStr); } catch (NumberFormatException ignored) {}
                     }
+                    int avg = 15;
+                    if (!avgStr.isEmpty()) {
+                        try { avg = Integer.parseInt(avgStr); } catch (NumberFormatException ignored) {}
+                    }
+                    if (startStr.isEmpty()) startStr = "09:00";
 
                     String deptId = departments.get(deptIndex).id;
                     DatabaseReference newRef = docRef.push();
                     Doctor doc = new Doctor(newRef.getKey(), n, s, deptId, p, e, exp);
+                    doc.avgTimeMinutes = avg;
+                    doc.startTime = startStr;
                     newRef.setValue(doc);
                 })
                 .setNegativeButton("Cancel", null)
@@ -208,6 +219,8 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
         EditText phone = root.findViewById(R.id.input_doc_phone);
         EditText email = root.findViewById(R.id.input_doc_email);
         EditText experience = root.findViewById(R.id.input_doc_experience);
+        EditText avgTime = root.findViewById(R.id.input_doc_avg_time);
+        EditText startTime = root.findViewById(R.id.input_doc_start_time);
         Spinner deptSpinner = root.findViewById(R.id.spinner_dept);
 
         name.setText(doctor.name);
@@ -215,6 +228,8 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
         phone.setText(doctor.phone != null ? doctor.phone : "");
         email.setText(doctor.email != null ? doctor.email : "");
         experience.setText(String.valueOf(doctor.yearsOfExperience));
+        avgTime.setText(String.valueOf(Math.max(1, doctor.avgTimeMinutes)));
+        startTime.setText(doctor.startTime != null ? doctor.startTime : "09:00");
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -236,6 +251,8 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
                     String p = phone.getText().toString().trim();
                     String e = email.getText().toString().trim();
                     String expStr = experience.getText().toString().trim();
+                    String avgStr = avgTime.getText().toString().trim();
+                    String startStr = startTime.getText().toString().trim();
                     int deptIndex = deptSpinner.getSelectedItemPosition();
 
                     if (n.isEmpty() || s.isEmpty()) {
@@ -245,10 +262,13 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
 
                     int exp = 0;
                     if (!expStr.isEmpty()) {
-
-                            exp = Integer.parseInt(expStr);
-
+                        try { exp = Integer.parseInt(expStr); } catch (NumberFormatException ignored) {}
                     }
+                    int avg = Math.max(1, doctor.avgTimeMinutes);
+                    if (!avgStr.isEmpty()) {
+                        try { avg = Integer.parseInt(avgStr); } catch (NumberFormatException ignored) {}
+                    }
+                    if (startStr.isEmpty()) startStr = doctor.startTime != null ? doctor.startTime : "09:00";
 
                     doctor.name = n;
                     doctor.specialty = s;
@@ -256,7 +276,25 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
                     doctor.email = e;
                     doctor.yearsOfExperience = exp;
                     doctor.departmentId = departments.get(deptIndex).id;
-                    if (doctor.id != null) docRef.child(doctor.id).setValue(doctor);
+                    doctor.avgTimeMinutes = Math.max(1, avg);
+                    doctor.startTime = startStr;
+
+                    if (doctor.id != null) {
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("name", doctor.name);
+                        updates.put("specialty", doctor.specialty);
+                        updates.put("phone", doctor.phone);
+                        updates.put("email", doctor.email);
+                        updates.put("yearsOfExperience", doctor.yearsOfExperience);
+                        updates.put("departmentId", doctor.departmentId);
+                        updates.put("avgTimeMinutes", doctor.avgTimeMinutes);
+                        updates.put("startTime", doctor.startTime);
+                        updates.put("isAvailable", doctor.isAvailable);
+
+                        docRef.child(doctor.id).updateChildren(updates)
+                                .addOnFailureListener(err ->
+                                        Toast.makeText(this, "Failed to save doctor: " + err.getMessage(), Toast.LENGTH_LONG).show());
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -277,5 +315,4 @@ public class ManageDoctorsActivity extends AppCompatActivity implements ManageDo
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
 }
