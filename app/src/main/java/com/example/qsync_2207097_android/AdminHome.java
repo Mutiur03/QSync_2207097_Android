@@ -238,9 +238,8 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                         queueCount++;
                         if (queueItem.patientId != null && usersMap.containsKey(queueItem.patientId)) {
                             User user = usersMap.get(queueItem.patientId);
-                            if (user != null && user.name != null) {
-                                queueItem.patientName = user.name;
-                            }
+                            queueItem.patientName = user.name;
+                            queueItem.patientPhone = user.phone;
                         }
                         List<AdminQueueItem> queueList = doctorQueues.get(queueItem.doctorId);
                         if (queueList != null) {

@@ -82,14 +82,14 @@
 
                     </LinearLayout>
 
-<!--                    <ImageButton-->
-<!--                        android:id="@+id/profile_edit_button"-->
-<!--                        android:layout_width="40dp"-->
-<!--                        android:layout_height="40dp"-->
-<!--                        android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--                        android:src="@android:drawable/ic_menu_edit"-->
-<!--                        android:contentDescription="Edit profile"-->
-<!--                        app:tint="?attr/colorPrimary" />-->
+                    <ImageButton
+                        android:id="@+id/profile_edit_button"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_menu_edit"
+                        android:contentDescription="Edit profile"
+                        app:tint="?attr/colorPrimary" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
