@@ -106,15 +106,17 @@ public class HomeFragment extends Fragment {
                         if (!isAdded()) return;
                         String currentToken = "Current Token: " + currentTokenValue + (isEmergency ? " (Emergency)" : "");
                         int avg = doctor.getAvgTimeMinutes();
-                        int remaining = Math.max(0, queueEntry.position - currentTokenValue);
-                        int waitTimeMinutes = remaining * Math.max(1, avg);
-                        String wait = "Estimated Wait: " + waitTimeMinutes + " min";
-                        int totalToReachYou = Math.max(1, queueEntry.position - 1);
-                        int progressed = Math.max(0, Math.min(queueEntry.position - 1, currentTokenValue - 1));
-                        int progressPercent = (int) Math.round((progressed * 100.0) / totalToReachYou);
-                        QueueItem queueItem = new QueueItem(doctorInfo, tag, token, currentToken, wait, progressPercent);
-                        userQueues.add(queueItem);
-                        adapter.notifyItemInserted(userQueues.size() - 1);
+                        // Compute waiting time based on database queues ahead of the user, not current token
+                        computeWaitingMinutes(queueEntry, Math.max(1, avg), waitTimeMinutes -> {
+                            if (!isAdded()) return;
+                            String wait = "Estimated Wait: " + waitTimeMinutes + " min";
+                            int totalToReachYou = Math.max(1, queueEntry.position - 1);
+                            int progressed = Math.max(0, Math.min(queueEntry.position - 1, currentTokenValue - 1));
+                            int progressPercent = (int) Math.round((progressed * 100.0) / totalToReachYou);
+                            QueueItem queueItem = new QueueItem(doctorInfo, tag, token, currentToken, wait, progressPercent);
+                            userQueues.add(queueItem);
+                            adapter.notifyItemInserted(userQueues.size() - 1);
+                        });
                     });
                 }
             }
@@ -125,8 +127,38 @@ public class HomeFragment extends Fragment {
     interface TokenCallback {
         void onComputed(int currentToken, boolean isEmergency);
     }
+    interface WaitTimeCallback {
+        void onComputed(int waitTimeMinutes);
+    }
+    private void computeWaitingMinutes(Queue.QueueEntry queueEntry, int avgMinutesPerPatient, WaitTimeCallback callback) {
+        DatabaseReference queuesRef = FirebaseDatabase.getInstance().getReference("queues");
+        queuesRef.orderByChild("doctorId").equalTo(queueEntry.doctorId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int aheadCount = 0;
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    String date = child.child("date").getValue(String.class);
+                    String status = child.child("status").getValue(String.class);
+                    Long posLong = child.child("position").getValue(Long.class);
+                    int pos = (posLong != null) ? posLong.intValue() : -1;
+                    if (!today.equals(date)) continue;
+                    if (pos > 0 && pos < queueEntry.position) {
+                        if ("waiting".equals(status) || "in_progress".equals(status)) {
+                            aheadCount++;
+                        }
+                    }
+                }
+                int waitMinutes = Math.max(0, aheadCount * Math.max(1, avgMinutesPerPatient));
+                callback.onComputed(waitMinutes);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onComputed(0);
+            }
+        });
+    }
     private void computeCurrentToken(Queue.QueueEntry queueEntry, TokenCallback callback) {
-        final int[] maxInProgressPos = {-1};
+        final int[] maxInProgressPos = {0};
         final boolean[] isEmergencyOfCurrent = {false};
         DatabaseReference queuesRef = FirebaseDatabase.getInstance().getReference("queues");
         queuesRef.orderByChild("doctorId").equalTo(queueEntry.doctorId).addListenerForSingleValueEvent(new ValueEventListener() {
