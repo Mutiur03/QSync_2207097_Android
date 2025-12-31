@@ -17,6 +17,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,10 +107,9 @@ public class HomeFragment extends Fragment {
                         if (!isAdded()) return;
                         String currentToken = "Current Token: " + currentTokenValue + (isEmergency ? " (Emergency)" : "");
                         int avg = doctor.getAvgTimeMinutes();
-                        // Compute waiting time based on database queues ahead of the user, not current token
                         computeWaitingMinutes(queueEntry, Math.max(1, avg), waitTimeMinutes -> {
                             if (!isAdded()) return;
-                            String wait = "Estimated Wait: " + waitTimeMinutes + " min";
+                            String wait = "Estimated Wait: " + (currentTokenValue == queueEntry.position ? 0 : waitTimeMinutes) + " min";
                             int totalToReachYou = Math.max(1, queueEntry.position - 1);
                             int progressed = Math.max(0, Math.min(queueEntry.position - 1, currentTokenValue - 1));
                             int progressPercent = (int) Math.round((progressed * 100.0) / totalToReachYou);
@@ -135,20 +135,38 @@ public class HomeFragment extends Fragment {
         queuesRef.orderByChild("doctorId").equalTo(queueEntry.doctorId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int aheadCount = 0;
+                int currentToken = 0;
+                long startedAtMs = -1L;
                 for (DataSnapshot child : snapshot.getChildren()) {
                     String date = child.child("date").getValue(String.class);
                     String status = child.child("status").getValue(String.class);
                     Long posLong = child.child("position").getValue(Long.class);
                     int pos = (posLong != null) ? posLong.intValue() : -1;
                     if (!today.equals(date)) continue;
-                    if (pos > 0 && pos < queueEntry.position) {
-                        if ("waiting".equals(status) || "in_progress".equals(status)) {
-                            aheadCount++;
+                    if (status != null && status.equals("in_progress") && pos > 0) {
+                        Long sa = child.child("startedAt").getValue(Long.class);
+                        if (sa == null) {
+                            child.getRef().child("startedAt").setValue(ServerValue.TIMESTAMP);
+                        } else {
+                            startedAtMs = sa;
                         }
+                        currentToken = Math.max(currentToken, pos);
                     }
                 }
-                int waitMinutes = Math.max(0, aheadCount * Math.max(1, avgMinutesPerPatient));
+                if (currentToken == queueEntry.position) {
+                    callback.onComputed(0);
+                    return;
+                }
+                int remainingCurrent = 0;
+                if (startedAtMs > 0L) {
+                    long now = System.currentTimeMillis();
+                    long elapsedMin = Math.max(0L, (now - startedAtMs) / 60000L);
+                    remainingCurrent = (int) Math.max(0L, (long) avgMinutesPerPatient - elapsedMin);
+                } else {
+                    remainingCurrent = avgMinutesPerPatient;
+                }
+                int slotsBetween = Math.max(0, (queueEntry.position - currentToken) - 1);
+                int waitMinutes = Math.max(0, remainingCurrent + (slotsBetween * Math.max(1, avgMinutesPerPatient)));
                 callback.onComputed(waitMinutes);
             }
             @Override
@@ -175,6 +193,10 @@ public class HomeFragment extends Fragment {
                         if (pos > maxInProgressPos[0]) {
                             maxInProgressPos[0] = pos;
                             isEmergencyOfCurrent[0] = emergency;
+                            Long sa = child.child("startedAt").getValue(Long.class);
+                            if (sa == null) {
+                                child.getRef().child("startedAt").setValue(ServerValue.TIMESTAMP);
+                            }
                         }
                     }
                 }
