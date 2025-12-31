@@ -126,7 +126,7 @@ public class HomeFragment extends Fragment {
         void onComputed(int currentToken, boolean isEmergency);
     }
     private void computeCurrentToken(Queue.QueueEntry queueEntry, TokenCallback callback) {
-        final int[] maxInProgressPos = {1};
+        final int[] maxInProgressPos = {-1};
         final boolean[] isEmergencyOfCurrent = {false};
         DatabaseReference queuesRef = FirebaseDatabase.getInstance().getReference("queues");
         queuesRef.orderByChild("doctorId").equalTo(queueEntry.doctorId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -145,6 +145,10 @@ public class HomeFragment extends Fragment {
                             isEmergencyOfCurrent[0] = emergency;
                         }
                     }
+                }
+                if(maxInProgressPos[0] == -1){
+                    maxInProgressPos[0] = queueEntry.position;
+                    isEmergencyOfCurrent[0] = false;
                 }
                 callback.onComputed(maxInProgressPos[0], isEmergencyOfCurrent[0]);
             }

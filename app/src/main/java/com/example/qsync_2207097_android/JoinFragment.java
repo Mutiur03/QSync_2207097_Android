@@ -139,7 +139,7 @@ public class JoinFragment extends Fragment {
                 List<Department> departments = new ArrayList<>();
                 for (DataSnapshot child : snapshot.getChildren()) {
                     Department dept = child.getValue(Department.class);
-                    if (dept != null && dept.isActive) {
+                    if (dept != null) {
                         dept.id = child.getKey();
                         departments.add(dept);
                     }

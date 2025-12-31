@@ -47,13 +47,6 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.Vi
 
         holder.departmentId.setText("ID: " + (d.id != null ? d.id : "Unknown"));
 
-        if (d.doctorCount > 0 || d.activeQueues > 0) {
-            holder.departmentStats.setVisibility(View.VISIBLE);
-            holder.departmentStats.setText(d.getStatsText());
-        } else {
-            holder.departmentStats.setVisibility(View.GONE);
-        }
-
         holder.itemView.setOnClickListener(v -> {
             if (callback != null) {
                 callback.onDepartmentSelected(d, position);
@@ -68,14 +61,14 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.Vi
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView departmentName, departmentId, departmentStats;
+        TextView departmentName;
+        TextView departmentId;
         ImageView departmentIcon;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             departmentName = itemView.findViewById(R.id.department_name);
             departmentId = itemView.findViewById(R.id.department_id);
-            departmentStats = itemView.findViewById(R.id.department_stats);
             departmentIcon = itemView.findViewById(R.id.department_icon);
         }
     }

@@ -62,18 +62,6 @@
                 android:ellipsize="end"
                 tools:text="ID: dept_cardiology_001" />
 
-            <TextView
-                android:id="@+id/department_stats"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="5 Doctors • 12 Active Queues"
-                android:textColor="@color/textSecondary"
-                android:textSize="11sp"
-                android:visibility="gone"
-                tools:visibility="visible"
-                tools:text="5 Doctors • 12 Active Queues" />
-
         </LinearLayout>
 
 

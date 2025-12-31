@@ -73,20 +73,42 @@ public class AdminExpandableAdapter extends BaseExpandableListAdapter {
             return errorView;
         }
         Department department = departments.get(groupPosition);
-        if (convertView == null) {
+        if (convertView == null || convertView.getId() != R.id.admin_department_item_root) {
             convertView = LayoutInflater.from(context).inflate(R.layout.admin_department_item, parent, false);
         }
+        // Title
         TextView departmentName = convertView.findViewById(android.R.id.text1);
-        TextView departmentStats = convertView.findViewById(android.R.id.text2);
-        TextView activeQueues = convertView.findViewById(R.id.tvActiveQueues);
+        // Subtitle (doctors + queues)
+        TextView departmentInfo = convertView.findViewById(android.R.id.text2);
+        // Badge for active queues
+        TextView tvActiveQueues = convertView.findViewById(R.id.tvActiveQueues);
         if (departmentName != null) {
             departmentName.setText(department.name + (isExpanded ? " −" : " +"));
         }
-        if (departmentStats != null) {
-            departmentStats.setText(department.getStatsText());
+        // Compute doctor count for this department
+        int doctorCount = 0;
+        List<Doctor> docs = departmentDoctors.get(department.id);
+        if (docs != null) {
+            doctorCount = docs.size();
         }
-        if (activeQueues != null) {
-            activeQueues.setText(String.valueOf(department.activeQueues));
+        // Compute active queues count across doctors in this department
+        int activeQueues = 0;
+        if (docs != null) {
+            for (Doctor d : docs) {
+                List<AdminQueueItem> queues = doctorQueues.get(d.id);
+                if (queues == null) continue;
+                for (AdminQueueItem q : queues) {
+                    if (q != null && ("waiting".equals(q.status) || "in_progress".equals(q.status))) {
+                        activeQueues++;
+                    }
+                }
+            }
+        }
+        if (departmentInfo != null) {
+            departmentInfo.setText(doctorCount + " Doctors • " + activeQueues + " Active Queues");
+        }
+        if (tvActiveQueues != null) {
+            tvActiveQueues.setText(String.valueOf(activeQueues));
         }
         return convertView;
     }

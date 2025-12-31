@@ -40,14 +40,16 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
     private final String today = getTodayDate();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_admin_home, container, false);
+        return inflater.inflate(R.layout.fragment_admin_home, container, false);
+    }
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         databaseRef = FirebaseDatabase.getInstance().getReference();
         initViews(view);
         Button buttonCompleted = view.findViewById(R.id.buttonCompleted);
         if (buttonCompleted != null) {
             buttonCompleted.setOnClickListener(v -> openCompleted());
         }
-        return view;
     }
     private void openCompleted() {
         if (!isAdded()) return;
@@ -143,7 +145,7 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                 }
                 for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
                     Department department = departmentSnapshot.getValue(Department.class);
-                    if (department != null && department.isActive) {
+                    if (department != null) {
                         department.id = departmentSnapshot.getKey();
                         departments.add(department);
                     }
@@ -184,19 +186,11 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                     if (doctor != null) {
                         doctor.id = doctorSnapshot.getKey();
                         doctorCount++;
-                        Log.d("DEBUG", "Doctor deptId = " + doctor.departmentId);
-                        for (Department d : departments) {
-                            Log.d("DEBUG", "Department id = " + d.id);
-                        }
                         List<Doctor> doctorList = departmentDoctors.get(doctor.departmentId);
                         if (doctorList != null) {
                             doctorList.add(doctor);
                         }
                     }
-                }
-                for (Department department : departments) {
-                    List<Doctor> doctorList = departmentDoctors.get(department.id);
-                    department.doctorCount = doctorList != null ? doctorList.size() : 0;
                 }
                 if (doctorCount > 0) {
                     showSuccess("Loaded " + doctorCount + " doctors");
@@ -238,8 +232,10 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                         queueCount++;
                         if (queueItem.patientId != null && usersMap.containsKey(queueItem.patientId)) {
                             User user = usersMap.get(queueItem.patientId);
-                            queueItem.patientName = user.name;
-                            queueItem.patientPhone = user.phone;
+                            if (user != null) {
+                                queueItem.patientName = user.name;
+                                queueItem.patientPhone = user.phone;
+                            }
                         }
                         List<AdminQueueItem> queueList = doctorQueues.get(queueItem.doctorId);
                         if (queueList != null) {
@@ -282,23 +278,6 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                 doctor.currentQueueLength = active;
             }
         }
-        for (Department department : departments) {
-            int activeQueues = 0;
-            List<Doctor> doctorList = departmentDoctors.get(department.id);
-            if (doctorList != null) {
-                for (Doctor doctor : doctorList) {
-                    List<AdminQueueItem> queueList = doctorQueues.get(doctor.id);
-                    if (queueList != null) {
-                        for (AdminQueueItem queue : queueList) {
-                            if ("waiting".equals(queue.status) || "in_progress".equals(queue.status)) {
-                                activeQueues++;
-                            }
-                        }
-                    }
-                }
-            }
-            department.activeQueues = activeQueues;
-        }
     }
     private void setupAdapter() {
         if (getContext() == null || !isAdded()) {
@@ -330,18 +309,51 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
             TextView tvTotalDepartments = getView().findViewById(R.id.tvTotalDepartments);
             TextView tvTotalQueues = getView().findViewById(R.id.tvTotalQueues);
             TextView tvTotalUsers = getView().findViewById(R.id.tvTotalUsers);
+            TextView tvTotalDoctors = null;
+            int tvTotalDoctorsId = getResources().getIdentifier("tvTotalDoctors", "id", requireContext().getPackageName());
+            if (tvTotalDoctorsId != 0) {
+                tvTotalDoctors = getView().findViewById(tvTotalDoctorsId);
+            }
             if (tvTotalDepartments != null) {
-                tvTotalDepartments.setText(String.valueOf(departments.size()));
+                tvTotalDepartments.setText(String.valueOf(departments != null ? departments.size() : 0));
+            }
+            java.util.Set<String> connectedDoctorIds = new java.util.HashSet<>();
+            if (departmentDoctors != null) {
+                for (java.util.List<Doctor> docs : departmentDoctors.values()) {
+                    if (docs != null) {
+                        for (Doctor d : docs) {
+                            if (d != null && d.id != null) {
+                                connectedDoctorIds.add(d.id);
+                            }
+                        }
+                    }
+                }
+            }
+            int totalDoctors = connectedDoctorIds.size();
+            if (tvTotalDoctors != null) {
+                tvTotalDoctors.setText(String.valueOf(totalDoctors));
             }
             int totalActiveQueues = 0;
-            for (Department department : departments) {
-                totalActiveQueues += department.activeQueues;
+            if (doctorQueues != null && !connectedDoctorIds.isEmpty()) {
+                for (java.util.Map.Entry<String, java.util.List<AdminQueueItem>> entry : doctorQueues.entrySet()) {
+                    String doctorId = entry.getKey();
+                    if (!connectedDoctorIds.contains(doctorId)) continue;
+                    java.util.List<AdminQueueItem> queues = entry.getValue();
+                    if (queues == null) continue;
+                    for (AdminQueueItem q : queues) {
+                        if (q == null) continue;
+                        if ("waiting".equals(q.status) || "in_progress".equals(q.status)) {
+                            totalActiveQueues++;
+                        }
+                    }
+                }
             }
+
             if (tvTotalQueues != null) {
                 tvTotalQueues.setText(String.valueOf(totalActiveQueues));
             }
             if (tvTotalUsers != null) {
-                tvTotalUsers.setText(String.valueOf(usersMap.size()));
+                tvTotalUsers.setText(String.valueOf(usersMap != null ? usersMap.size() : 0));
             }
         } catch (Exception e) {
             showError("Error updating statistics: " + e.getMessage());
@@ -557,6 +569,15 @@ public class AdminHome extends Fragment implements AdminExpandableAdapter.OnQueu
                 Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
             }
         } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        adapter = null;
+        expandableListView = null;
+        progressBar = null;
+        textEmptyState = null;
     }
     private String getTodayDate() {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
