@@ -36,6 +36,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import android.util.Log;
+import android.app.DatePickerDialog;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class ProfileFragment extends Fragment {
 
@@ -329,6 +333,23 @@ public class ProfileFragment extends Fragment {
         inputPhone.setText(valuePhone.getText().toString());
         inputEmail.setText(valueEmail.getText().toString());
         inputDob.setText(valueDob.getText().toString());
+        // Make DOB field open a DatePicker when clicked or focused
+        inputDob.setInputType(InputType.TYPE_NULL);
+        inputDob.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            int y = c.get(Calendar.YEAR);
+            int m = c.get(Calendar.MONTH);
+            int d = c.get(Calendar.DAY_OF_MONTH);
+            DatePickerDialog dp = new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+                String formatted = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                inputDob.setText(formatted);
+            }, y, m, d);
+            dp.show();
+        });
+        inputDob.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus)
+                inputDob.performClick();
+        });
         String[] genders = new String[] { "Male", "Female", "Other" };
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line,
                 genders);
@@ -360,8 +381,13 @@ public class ProfileFragment extends Fragment {
                     if (userRtRef == null) {
                         userRtRef = FirebaseDatabase.getInstance().getReference("users").child(user.getUid());
                     }
-                    userRtRef.updateChildren(data).addOnFailureListener(
-                            e -> Toast.makeText(requireContext(), "RTDB save failed", Toast.LENGTH_SHORT).show());
+                    userRtRef.updateChildren(data, (error, ref) -> {
+                        if (error != null) {
+                            Log.e("ProfileFragment", "RTDB update failed", error.toException());
+                            Toast.makeText(requireContext(), "RTDB save failed: " + error.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     DocumentReference doc = db.collection("users").document(user.getUid());
                     doc.set(data, com.google.firebase.firestore.SetOptions.merge()).addOnSuccessListener(aVoid -> {
                         valueFullName.setText(name);
