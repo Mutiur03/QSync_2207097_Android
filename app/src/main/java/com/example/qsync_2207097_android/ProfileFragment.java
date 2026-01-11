@@ -43,6 +43,7 @@ public class ProfileFragment extends Fragment {
     private ShapeableImageView profileImage;
     private TextView profileName, profileSubtitle;
     private TextView valueFullName, valuePhone, valueEmail, valueDob, valueGender;
+    private TextView labelFullName, labelPhone, labelEmail, labelDob, labelGender;
     private FirebaseAuth auth;
     private FirebaseFirestore db;
     private FirebaseDatabase rtdb;
@@ -63,17 +64,37 @@ public class ProfileFragment extends Fragment {
         profileImage = view.findViewById(R.id.profile_image);
         profileName = view.findViewById(R.id.profile_name);
         profileSubtitle = view.findViewById(R.id.profile_subtitle);
-        valueFullName = view.findViewById(R.id.value_fullname);
-        valuePhone = view.findViewById(R.id.value_phone);
-        valueEmail = view.findViewById(R.id.value_email);
-        valueDob = view.findViewById(R.id.value_dob);
-        valueGender = view.findViewById(R.id.value_gender);
+        View includeFullname = view.findViewById(R.id.include_fullname);
+        View includePhone = view.findViewById(R.id.include_phone);
+        View includeEmail = view.findViewById(R.id.include_email);
+        View includeDob = view.findViewById(R.id.include_dob);
+        View includeGender = view.findViewById(R.id.include_gender);
+
+        labelFullName = includeFullname.findViewById(R.id.item_label);
+        valueFullName = includeFullname.findViewById(R.id.item_value);
+        labelFullName.setText("Full Name");
+
+        labelPhone = includePhone.findViewById(R.id.item_label);
+        valuePhone = includePhone.findViewById(R.id.item_value);
+        labelPhone.setText("Phone");
+
+        labelEmail = includeEmail.findViewById(R.id.item_label);
+        valueEmail = includeEmail.findViewById(R.id.item_value);
+        labelEmail.setText("Email");
+
+        labelDob = includeDob.findViewById(R.id.item_label);
+        valueDob = includeDob.findViewById(R.id.item_value);
+        labelDob.setText("Date of Birth");
+
+        labelGender = includeGender.findViewById(R.id.item_label);
+        valueGender = includeGender.findViewById(R.id.item_value);
+        labelGender.setText("Gender");
+
         MaterialButton logoutButton = view.findViewById(R.id.button_logout);
         TextView changePassword = view.findViewById(R.id.setting_change_password);
         TextView notifications = view.findViewById(R.id.setting_notifications);
         TextView privacy = view.findViewById(R.id.setting_privacy);
-        MaterialToolbar toolbar = view.findViewById(R.id.profile_toolbar);
-        ImageButton editBtn = view.findViewById(R.id.profile_edit_button);
+        MaterialButton editBtn = view.findViewById(R.id.profile_edit_button);
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
                 Glide.with(requireContext()).load(uri).centerCrop().into(profileImage);
@@ -84,29 +105,35 @@ public class ProfileFragment extends Fragment {
                         if (task.isSuccessful()) {
                             Toast.makeText(requireContext(), "Profile photo updated", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(requireContext(), "Failed to update profile photo", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), "Failed to update profile photo", Toast.LENGTH_SHORT)
+                                    .show();
                         }
                     });
                 }
             }
         });
-        if (toolbar != null) {
-            toolbar.setNavigationOnClickListener(v -> {
-                if (getActivity() != null) getActivity().onBackPressed();
-            });
-        }
+        // if (toolbar != null) {
+        // toolbar.setNavigationOnClickListener(v -> {
+        // if (getActivity() != null) getActivity().onBackPressed();
+        // });
+        // }
         View.OnClickListener pickListener = v -> pickImageLauncher.launch("image/*");
         profileImage.setOnClickListener(pickListener);
         changePassword.setOnClickListener(v -> showChangePasswordDialog());
-        notifications.setOnClickListener(v -> Toast.makeText(requireContext(), "Notification Preferences tapped", Toast.LENGTH_SHORT).show());
-        privacy.setOnClickListener(v -> Toast.makeText(requireContext(), "Privacy Settings tapped", Toast.LENGTH_SHORT).show());
-        logoutButton.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireContext()).setTitle("Logout").setMessage("Are you sure you want to logout?").setNegativeButton("Cancel", (d, w) -> d.dismiss()).setPositiveButton("Logout", (d, w) -> {
-            auth.signOut();
-            Intent intent = new Intent(getActivity(), MainActivity.class);
-            startActivity(intent);
-            if (getActivity() != null) getActivity().finish();
-            Toast.makeText(requireContext(), "Logout successful", Toast.LENGTH_SHORT).show();
-        }).show());
+        notifications.setOnClickListener(
+                v -> Toast.makeText(requireContext(), "Notification Preferences tapped", Toast.LENGTH_SHORT).show());
+        privacy.setOnClickListener(
+                v -> Toast.makeText(requireContext(), "Privacy Settings tapped", Toast.LENGTH_SHORT).show());
+        logoutButton.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireContext()).setTitle("Logout")
+                .setMessage("Are you sure you want to logout?").setNegativeButton("Cancel", (d, w) -> d.dismiss())
+                .setPositiveButton("Logout", (d, w) -> {
+                    auth.signOut();
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    startActivity(intent);
+                    if (getActivity() != null)
+                        getActivity().finish();
+                    Toast.makeText(requireContext(), "Logout successful", Toast.LENGTH_SHORT).show();
+                }).show());
         if (auth.getCurrentUser() != null) {
             userRtRef = FirebaseDatabase.getInstance().getReference("users").child(auth.getCurrentUser().getUid());
             attachRealtimeListener();
@@ -126,7 +153,8 @@ public class ProfileFragment extends Fragment {
     }
 
     private void attachRealtimeListener() {
-        if (userRtRef == null) return;
+        if (userRtRef == null)
+            return;
         if (userRealtimeListener != null) {
             userRtRef.removeEventListener(userRealtimeListener);
         }
@@ -139,17 +167,23 @@ public class ProfileFragment extends Fragment {
                     String emailDb = snapshot.child("email").getValue(String.class);
                     String dob = snapshot.child("dob").getValue(String.class);
                     String gender = snapshot.child("gender").getValue(String.class);
-                    if (fullName != null) valueFullName.setText(fullName);
-                    if (phone != null) valuePhone.setText(phone);
-                    if (emailDb != null) valueEmail.setText(emailDb);
-                    if (dob != null) valueDob.setText(dob);
-                    if (gender != null) valueGender.setText(gender);
+                    if (fullName != null)
+                        valueFullName.setText(fullName);
+                    if (phone != null)
+                        valuePhone.setText(phone);
+                    if (emailDb != null)
+                        valueEmail.setText(emailDb);
+                    if (dob != null)
+                        valueDob.setText(dob);
+                    if (gender != null)
+                        valueGender.setText(gender);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(requireContext(), "Realtime load cancelled: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Realtime load cancelled: " + error.getMessage(), Toast.LENGTH_SHORT)
+                        .show();
             }
         };
         userRtRef.addValueEventListener(userRealtimeListener);
@@ -181,11 +215,26 @@ public class ProfileFragment extends Fragment {
                         String emailDb = snapshot.child("email").getValue(String.class);
                         String dob = snapshot.child("dob").getValue(String.class);
                         String gender = snapshot.child("gender").getValue(String.class);
-                        if (fullName != null) { valueFullName.setText(fullName); gotData = true; }
-                        if (phone != null) { valuePhone.setText(phone); gotData = true; }
-                        if (emailDb != null) { valueEmail.setText(emailDb); gotData = true; }
-                        if (dob != null) { valueDob.setText(dob); gotData = true; }
-                        if (gender != null) { valueGender.setText(gender); gotData = true; }
+                        if (fullName != null) {
+                            valueFullName.setText(fullName);
+                            gotData = true;
+                        }
+                        if (phone != null) {
+                            valuePhone.setText(phone);
+                            gotData = true;
+                        }
+                        if (emailDb != null) {
+                            valueEmail.setText(emailDb);
+                            gotData = true;
+                        }
+                        if (dob != null) {
+                            valueDob.setText(dob);
+                            gotData = true;
+                        }
+                        if (gender != null) {
+                            valueGender.setText(gender);
+                            gotData = true;
+                        }
                     }
                     if (!gotData) {
                         DocumentReference doc = db.collection("users").document(currentUser.getUid());
@@ -196,16 +245,23 @@ public class ProfileFragment extends Fragment {
                                 String fsEmail = snapshotFs.getString("email");
                                 String dob = snapshotFs.getString("dob");
                                 String gender = snapshotFs.getString("gender");
-                                if (valueFullName.getText().length() == 0 && fullName != null) valueFullName.setText(fullName);
-                                if (valuePhone.getText().length() == 0 && phone != null) valuePhone.setText(phone);
-                                if (valueEmail.getText().length() == 0 && fsEmail != null) valueEmail.setText(fsEmail);
-                                if (valueDob.getText().length() == 0 && dob != null) valueDob.setText(dob);
-                                if (valueGender.getText().length() == 0 && gender != null) valueGender.setText(gender);
+                                if (valueFullName.getText().length() == 0 && fullName != null)
+                                    valueFullName.setText(fullName);
+                                if (valuePhone.getText().length() == 0 && phone != null)
+                                    valuePhone.setText(phone);
+                                if (valueEmail.getText().length() == 0 && fsEmail != null)
+                                    valueEmail.setText(fsEmail);
+                                if (valueDob.getText().length() == 0 && dob != null)
+                                    valueDob.setText(dob);
+                                if (valueGender.getText().length() == 0 && gender != null)
+                                    valueGender.setText(gender);
                             } else {
                                 String email = currentUser.getEmail();
-                                if (valueEmail.getText().length() == 0 && email != null) valueEmail.setText(email);
+                                if (valueEmail.getText().length() == 0 && email != null)
+                                    valueEmail.setText(email);
                             }
-                        }).addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load profile (FS)", Toast.LENGTH_SHORT).show());
+                        }).addOnFailureListener(e -> Toast
+                                .makeText(requireContext(), "Failed to load profile (FS)", Toast.LENGTH_SHORT).show());
                     }
                 }
 
@@ -231,25 +287,35 @@ public class ProfileFragment extends Fragment {
         EditText currentPass = dialogView.findViewById(R.id.input_current_password);
         EditText newPass = dialogView.findViewById(R.id.input_new_password);
         EditText confirmPass = dialogView.findViewById(R.id.input_confirm_password);
-        new MaterialAlertDialogBuilder(requireContext()).setTitle("Change Password").setView(dialogView).setNegativeButton("Cancel", (d, w) -> d.dismiss()).setPositiveButton("Update", (d, w) -> {
-            String current = currentPass.getText().toString();
-            String newP = newPass.getText().toString();
-            String confirm = confirmPass.getText().toString();
-            if (current.isEmpty() || newP.isEmpty() || confirm.isEmpty()) {
-                Toast.makeText(requireContext(), "All fields are required", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (!newP.equals(confirm)) {
-                Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            String email = user.getEmail();
-            if (email == null) {
-                Toast.makeText(requireContext(), "No email associated with account", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            auth.signInWithCredential(EmailAuthProvider.getCredential(email, current)).addOnSuccessListener(result -> user.updatePassword(newP).addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "Password updated", Toast.LENGTH_SHORT).show()).addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update password", Toast.LENGTH_SHORT).show())).addOnFailureListener(e -> Toast.makeText(requireContext(), "Current password incorrect", Toast.LENGTH_SHORT).show());
-        }).show();
+        new MaterialAlertDialogBuilder(requireContext()).setTitle("Change Password").setView(dialogView)
+                .setNegativeButton("Cancel", (d, w) -> d.dismiss()).setPositiveButton("Update", (d, w) -> {
+                    String current = currentPass.getText().toString();
+                    String newP = newPass.getText().toString();
+                    String confirm = confirmPass.getText().toString();
+                    if (current.isEmpty() || newP.isEmpty() || confirm.isEmpty()) {
+                        Toast.makeText(requireContext(), "All fields are required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (!newP.equals(confirm)) {
+                        Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String email = user.getEmail();
+                    if (email == null) {
+                        Toast.makeText(requireContext(), "No email associated with account", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    auth.signInWithCredential(EmailAuthProvider.getCredential(email, current))
+                            .addOnSuccessListener(result -> user.updatePassword(newP)
+                                    .addOnSuccessListener(aVoid -> Toast
+                                            .makeText(requireContext(), "Password updated", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast
+                                            .makeText(requireContext(), "Failed to update password", Toast.LENGTH_SHORT)
+                                            .show()))
+                            .addOnFailureListener(e -> Toast
+                                    .makeText(requireContext(), "Current password incorrect", Toast.LENGTH_SHORT)
+                                    .show());
+                }).show();
     }
 
     private void showEditProfileDialog() {
@@ -258,55 +324,58 @@ public class ProfileFragment extends Fragment {
         EditText inputPhone = dialogView.findViewById(R.id.input_phone);
         EditText inputEmail = dialogView.findViewById(R.id.input_email);
         EditText inputDob = dialogView.findViewById(R.id.input_dob);
-        Spinner inputGender = dialogView.findViewById(R.id.input_gender);
+        android.widget.AutoCompleteTextView inputGender = dialogView.findViewById(R.id.input_gender);
         inputName.setText(valueFullName.getText().toString());
         inputPhone.setText(valuePhone.getText().toString());
         inputEmail.setText(valueEmail.getText().toString());
         inputDob.setText(valueDob.getText().toString());
-        String[] genders = new String[]{"Male", "Female", "Other"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, genders);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        String[] genders = new String[] { "Male", "Female", "Other" };
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line,
+                genders);
         inputGender.setAdapter(adapter);
         String currentGender = valueGender.getText().toString();
-        int sel = java.util.Arrays.asList(genders).indexOf(currentGender);
-        if (sel >= 0) inputGender.setSelection(sel);
-        new MaterialAlertDialogBuilder(requireContext()).setTitle("Edit Profile").setView(dialogView).setNegativeButton("Cancel", (d, w) -> d.dismiss()).setPositiveButton("Save", (d, w) -> {
-            String name = inputName.getText().toString().trim();
-            String phone = inputPhone.getText().toString().trim();
-            String email = inputEmail.getText().toString().trim();
-            String dob = inputDob.getText().toString().trim();
-            String gender = inputGender.getSelectedItem() != null ? inputGender.getSelectedItem().toString() : "";
-            if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || dob.isEmpty() || gender.isEmpty()) {
-                Toast.makeText(requireContext(), "All fields are required", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            FirebaseUser user = auth.getCurrentUser();
-            if (user == null) {
-                Toast.makeText(requireContext(), "Please sign in first", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            java.util.Map<String, Object> data = new java.util.HashMap<>();
-            data.put("name", name);
-            data.put("phone", phone);
-            data.put("email", email);
-            data.put("dob", dob);
-            data.put("gender", gender);
-            if (userRtRef == null) {
-                userRtRef = FirebaseDatabase.getInstance().getReference("users").child(user.getUid());
-            }
-            userRtRef.updateChildren(data).addOnFailureListener(e -> Toast.makeText(requireContext(), "RTDB save failed", Toast.LENGTH_SHORT).show());
-            DocumentReference doc = db.collection("users").document(user.getUid());
-            doc.set(data, com.google.firebase.firestore.SetOptions.merge()).addOnSuccessListener(aVoid -> {
-                valueFullName.setText(name);
-                valuePhone.setText(phone);
-                valueEmail.setText(email);
-                valueDob.setText(dob);
-                valueGender.setText(gender);
-                UserProfileChangeRequest req = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
-                user.updateProfile(req);
-                Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show();
-            }).addOnFailureListener(err -> Toast.makeText(requireContext(), "Failed to save (FS)", Toast.LENGTH_SHORT).show());
-        }).show();
+        inputGender.setText(currentGender, false);
+        new MaterialAlertDialogBuilder(requireContext()).setTitle("Edit Profile").setView(dialogView)
+                .setNegativeButton("Cancel", (d, w) -> d.dismiss()).setPositiveButton("Save", (d, w) -> {
+                    String name = inputName.getText().toString().trim();
+                    String phone = inputPhone.getText().toString().trim();
+                    String email = inputEmail.getText().toString().trim();
+                    String dob = inputDob.getText().toString().trim();
+                    String gender = inputGender.getText().toString().trim();
+                    if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || dob.isEmpty() || gender.isEmpty()) {
+                        Toast.makeText(requireContext(), "All fields are required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    FirebaseUser user = auth.getCurrentUser();
+                    if (user == null) {
+                        Toast.makeText(requireContext(), "Please sign in first", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    java.util.Map<String, Object> data = new java.util.HashMap<>();
+                    data.put("name", name);
+                    data.put("phone", phone);
+                    data.put("email", email);
+                    data.put("dob", dob);
+                    data.put("gender", gender);
+                    if (userRtRef == null) {
+                        userRtRef = FirebaseDatabase.getInstance().getReference("users").child(user.getUid());
+                    }
+                    userRtRef.updateChildren(data).addOnFailureListener(
+                            e -> Toast.makeText(requireContext(), "RTDB save failed", Toast.LENGTH_SHORT).show());
+                    DocumentReference doc = db.collection("users").document(user.getUid());
+                    doc.set(data, com.google.firebase.firestore.SetOptions.merge()).addOnSuccessListener(aVoid -> {
+                        valueFullName.setText(name);
+                        valuePhone.setText(phone);
+                        valueEmail.setText(email);
+                        valueDob.setText(dob);
+                        valueGender.setText(gender);
+                        UserProfileChangeRequest req = new UserProfileChangeRequest.Builder().setDisplayName(name)
+                                .build();
+                        user.updateProfile(req);
+                        Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show();
+                    }).addOnFailureListener(
+                            err -> Toast.makeText(requireContext(), "Failed to save (FS)", Toast.LENGTH_SHORT).show());
+                }).show();
     }
 
 }

@@ -39,7 +39,7 @@ public class AdminDashboard extends AppCompatActivity {
                 replaceFragment(new ManageFragment());
                 return true;
             } else if (id == R.id.profile) {
-                replaceFragment(new ProfileFragment());
+                replaceFragment(new AdminProfileFragment());
                 return true;
             }
             return false;
