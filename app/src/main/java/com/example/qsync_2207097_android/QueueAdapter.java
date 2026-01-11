@@ -14,9 +14,15 @@ import java.util.List;
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> {
 
     private final List<QueueItem> items;
+    private final OnItemClickListener listener;
 
-    public QueueAdapter(List<QueueItem> items) {
+    public interface OnItemClickListener {
+        void onItemClick(QueueItem item);
+    }
+
+    public QueueAdapter(List<QueueItem> items, OnItemClickListener listener) {
         this.items = items;
+        this.listener = listener;
     }
 
     @NonNull
@@ -30,11 +36,13 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         QueueItem item = items.get(position);
         holder.tvDoctor.setText(item.doctor);
+        holder.tvDepartment.setText(item.department);
         holder.tvTag.setText(item.tag);
         holder.tvToken.setText(item.token);
         holder.tvPosition.setText(item.position);
         holder.tvWait.setText(item.wait);
         holder.progress.setProgress(item.progress);
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
     @Override
@@ -43,12 +51,13 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvDoctor, tvTag, tvToken, tvPosition, tvWait;
+        TextView tvDoctor, tvDepartment, tvTag, tvToken, tvPosition, tvWait;
         ProgressBar progress;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDoctor = itemView.findViewById(R.id.tvDoctor);
+            tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvTag = itemView.findViewById(R.id.tvTag);
             tvToken = itemView.findViewById(R.id.tvToken);
             tvPosition = itemView.findViewById(R.id.tvPosition);

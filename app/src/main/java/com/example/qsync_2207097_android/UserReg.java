@@ -45,9 +45,9 @@ public class UserReg extends AppCompatActivity {
 
     public void registerUser(View view) {
         auth = FirebaseAuth.getInstance();
-        EditText nameEt = findViewById(R.id.editTextText);
-        EditText emailEt = findViewById(R.id.editTextTextEmailAddress);
-        EditText passEt = findViewById(R.id.editTextTextPassword);
+        EditText nameEt = findViewById(R.id.inputName);
+        EditText emailEt = findViewById(R.id.inputEmail);
+        EditText passEt = findViewById(R.id.inputPassword);
         String name = nameEt.getText().toString().trim();
         String email = emailEt.getText().toString().trim();
         String password = passEt.getText().toString();

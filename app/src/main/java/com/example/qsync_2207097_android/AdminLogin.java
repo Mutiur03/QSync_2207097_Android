@@ -41,11 +41,11 @@ public class AdminLogin extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        EditText editTextEmail = findViewById(R.id.editTextEmail);
-        EditText editTextPassword = findViewById(R.id.editTextPassword);
-        Button buttonLogin = findViewById(R.id.buttonLogin);
+        EditText editTextEmail = findViewById(R.id.inputEmail);
+        EditText editTextPassword = findViewById(R.id.inputPassword);
+        Button buttonLogin = findViewById(R.id.btnLogin);
         ProgressBar progressBar = findViewById(R.id.progressBar);
-        TextView textViewError = findViewById(R.id.textViewError);
+        TextView textViewError = findViewById(R.id.textError);
 
         buttonLogin.setOnClickListener(v -> {
             textViewError.setVisibility(View.GONE);

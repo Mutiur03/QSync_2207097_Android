@@ -8,9 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -19,18 +21,34 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
 public class HomeFragment extends Fragment {
     FirebaseAuth auth = FirebaseAuth.getInstance();
     FirebaseUser user = auth.getCurrentUser();
-    TextView tvGreeting = null;
+    TextView tvGreeting, tvDate;
     RecyclerView rv;
+    LinearLayout layoutEmptyState;
     QueueAdapter adapter;
     List<QueueItem> userQueues = new ArrayList<>();
     private final String today = getTodayDate();
     private String getTodayDate() {
-        return new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date());
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+    }
+    private String getDisplayDate() {
+        return new SimpleDateFormat("EEEE, d MMM", Locale.US).format(new Date());
+    }
+    private String getGreetingMessage() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        int hour = c.get(java.util.Calendar.HOUR_OF_DAY);
+        if (hour >= 5 && hour < 12) return "Good Morning,";
+        if (hour >= 12 && hour < 17) return "Good Afternoon,";
+        if (hour >= 17 && hour < 21) return "Good Evening,";
+        return "Good Night,";
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -44,21 +62,45 @@ public class HomeFragment extends Fragment {
             bottomNav.getMenu().findItem(R.id.home).setChecked(true);
         }
         rv = view.findViewById(R.id.rvQueues);
+        layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
+        tvGreeting = view.findViewById(R.id.tvGreeting);
+        tvDate = view.findViewById(R.id.tvDate);
+        ExtendedFloatingActionButton fab = view.findViewById(R.id.fabAddQueue);
+        tvDate.setText(getDisplayDate());
+        if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
+             tvGreeting.setText(getGreetingMessage() + " " + user.getDisplayName());
+        } else {
+             tvGreeting.setText(getGreetingMessage() + " Mutiur");
+        }
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new QueueAdapter(userQueues);
+        adapter = new QueueAdapter(userQueues, item -> {
+            QueueDetailsUserDialog dialog = new QueueDetailsUserDialog();
+            dialog.setQueueItem(item);
+            dialog.show(getParentFragmentManager(), "QueueDetailsUserDialog");
+        });
         rv.setAdapter(adapter);
         loadUserQueues();
-        FloatingActionButton fab = view.findViewById(R.id.fabAddQueue);
         fab.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction().replace(R.id.frame, new JoinFragment()).commit();
             if (bottomNav != null) {
                 bottomNav.getMenu().findItem(R.id.join).setChecked(true);
             }
         });
-        tvGreeting = view.findViewById(R.id.tvGreeting);
     }
+
+    private void updateEmptyState() {
+        if (userQueues.isEmpty()) {
+            rv.setVisibility(View.GONE);
+            layoutEmptyState.setVisibility(View.VISIBLE);
+        } else {
+            rv.setVisibility(View.VISIBLE);
+            layoutEmptyState.setVisibility(View.GONE);
+        }
+    }
+
     private void loadUserQueues() {
         if (user == null) {
+            updateEmptyState();
             return;
         }
         DatabaseReference queueRef = FirebaseDatabase.getInstance().getReference("queues");
@@ -66,17 +108,28 @@ public class HomeFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 userQueues.clear();
+                if (!snapshot.exists()) {
+                    updateEmptyState();
+                    return;
+                }
+                final boolean[] hasCandidates = {false};
                 for (DataSnapshot queueSnapshot : snapshot.getChildren()) {
                     Queue.QueueEntry entry = queueSnapshot.getValue(Queue.QueueEntry.class);
                     String date = queueSnapshot.child("date").getValue(String.class);
                     if (entry != null && ("waiting".equals(entry.status) || "in_progress".equals(entry.status)) && today.equals(date)) {
+                        hasCandidates[0] = true;
                         loadDoctorInfo(entry);
                     }
                 }
-                adapter.notifyDataSetChanged();
+                if (!hasCandidates[0]) {
+                     adapter.notifyDataSetChanged(); 
+                     updateEmptyState();
+                }
             }
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            public void onCancelled(@NonNull DatabaseError error) {
+                updateEmptyState();
+            }
         });
     }
     private void loadDoctorInfo(Queue.QueueEntry queueEntry) {
@@ -100,22 +153,31 @@ public class HomeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Department dept = snapshot.getValue(Department.class);
                 if (dept != null && isAdded()) {
-                    String doctorInfo = doctor.name + " - " + dept.name;
-                    String tag = dept.name.toUpperCase();
-                    String token = "Your Token: " + queueEntry.position;
+                    String doctorInfo = doctor.name;
+                    String tag = "OPD"; 
+                    
+                    String doctorName = "Dr. " + doctor.name;
+                    String departmentName = dept.name;
+
+                    String token = String.valueOf(queueEntry.position); // Just the number
+                    
                     computeCurrentToken(queueEntry, (currentTokenValue, isEmergency) -> {
                         if (!isAdded()) return;
-                        String currentToken = "Current Token: " + currentTokenValue + (isEmergency ? " (Emergency)" : "");
+                        
+                        String currentTokenStr = String.valueOf(currentTokenValue);
+                        
                         int avg = doctor.getAvgTimeMinutes();
                         computeWaitingMinutes(queueEntry, Math.max(1, avg), waitTimeMinutes -> {
                             if (!isAdded()) return;
-                            String wait = "Estimated Wait: " + (currentTokenValue == queueEntry.position ? 0 : waitTimeMinutes) + " min";
+                            String waitStr = (currentTokenValue == queueEntry.position ? "0" : String.valueOf(waitTimeMinutes)) + "m";
                             int totalToReachYou = Math.max(1, queueEntry.position - 1);
                             int progressed = Math.max(0, Math.min(queueEntry.position - 1, currentTokenValue - 1));
                             int progressPercent = (int) Math.round((progressed * 100.0) / totalToReachYou);
-                            QueueItem queueItem = new QueueItem(doctorInfo, tag, token, currentToken, wait, progressPercent);
+                            if (currentTokenValue == queueEntry.position) progressPercent = 100;
+                            QueueItem queueItem = new QueueItem(doctorName, departmentName, tag, token, currentTokenStr, waitStr, progressPercent);
                             userQueues.add(queueItem);
-                            adapter.notifyItemInserted(userQueues.size() - 1);
+                            adapter.notifyDataSetChanged(); 
+                            updateEmptyState();
                         });
                     });
                 }
@@ -200,12 +262,12 @@ public class HomeFragment extends Fragment {
                         }
                     }
                 }
-                if(maxInProgressPos[0] == -1){
-                    maxInProgressPos[0] = queueEntry.position;
-                    isEmergencyOfCurrent[0] = false;
+                if(maxInProgressPos[0] == 0) { 
                 }
+                
                 callback.onComputed(maxInProgressPos[0], isEmergencyOfCurrent[0]);
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 callback.onComputed(maxInProgressPos[0], isEmergencyOfCurrent[0]);

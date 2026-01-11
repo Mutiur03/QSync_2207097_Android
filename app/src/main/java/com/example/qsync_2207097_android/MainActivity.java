@@ -60,18 +60,17 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(this, MainActivity.class));
                         finish();
                     });
-            AlertDialog progressDialog = new AlertDialog.Builder(this)
-                    .setView(new ProgressBar(this))
-                    .setCancelable(false)
-                    .create();
-            progressDialog.show();
+            View layoutSplash = findViewById(R.id.layoutSplash);
+            if(layoutSplash != null) layoutSplash.setVisibility(View.VISIBLE);
+
 
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("admins")
                     .child(currentUser.getUid());
             ref.get()
                     .addOnCompleteListener(adminCheckTask -> {
-                        progressDialog.dismiss();
                         if (!adminCheckTask.isSuccessful()) {
+                            if(layoutSplash != null) layoutSplash.setVisibility(View.GONE);
+
                             String msg = adminCheckTask.getException() != null ? adminCheckTask.getException().getMessage() : "Failed to check admin role";
                             Toast.makeText(this, "Database check failed: " + msg, Toast.LENGTH_LONG).show();
                             auth.signOut();
@@ -90,14 +89,19 @@ public class MainActivity extends AppCompatActivity {
                         }
                     })
                     .addOnFailureListener(e -> {
-                        progressDialog.dismiss();
+                        if(layoutSplash != null) layoutSplash.setVisibility(View.GONE);
+
                         Toast.makeText(this, "Database error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         auth.signOut();
                         startActivity(new Intent(this, MainActivity.class));
                         finish();
                     });
 
+        } else {
+            View layoutSplash = findViewById(R.id.layoutSplash);
+            if(layoutSplash != null) layoutSplash.setVisibility(View.GONE);
         }
+
     }
 //    private void signIn() {
 //        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
@@ -150,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
 //    }
     public void gotoList(View view) {
         auth = FirebaseAuth.getInstance();
-        EditText emailEt = findViewById(R.id.editTextText2);
-        EditText passEt = findViewById(R.id.editTextTextPassword2);
+        EditText emailEt = findViewById(R.id.inputEmail);
+        EditText passEt = findViewById(R.id.inputPassword);
         String email = emailEt.getText().toString().trim();
         String password = passEt.getText().toString();
 

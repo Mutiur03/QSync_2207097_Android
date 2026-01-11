@@ -15,6 +15,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -32,12 +34,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 public class JoinFragment extends Fragment {
     private Button btnJoin;
     private TextView tvSummaryDepartment, tvSummaryDoctor, tvSummaryTime, tvSummaryPosition;
     private RecyclerView recyclerDoctors;
     private EditText etSymptoms;
-    private Spinner spinnerPriority;
+    private Spinner spinnerDepartments;
+    private ChipGroup chipGroupPriority;
     private final List<Department> departments = new ArrayList<>();
     private final List<Doctor> currentDoctors = new ArrayList<>();
     private Doctor selectedDoctor;
@@ -46,26 +50,29 @@ public class JoinFragment extends Fragment {
     private DatabaseReference database = FirebaseDatabase.getInstance().getReference();
     AlertDialog loadingDialog;
     String today = getTodayDate();
+
     private String getTodayDate() {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
     }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_join, container, false);
     }
+
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
         if (activity.getSupportActionBar() != null) {
-            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            activity.getSupportActionBar().setTitle(getString(R.string.join_title));
+            activity.getSupportActionBar().hide(); // We have our own toolbar now
         }
         BottomNavigationView bottomNav = requireActivity().findViewById(R.id.bottomNav);
         if (bottomNav != null) {
             bottomNav.getMenu().findItem(R.id.join).setChecked(true);
         }
-        Spinner spinnerDepartments = view.findViewById(R.id.spinner_departments);
+
+        spinnerDepartments = view.findViewById(R.id.spinner_departments);
         btnJoin = view.findViewById(R.id.btn_join);
         tvSummaryDepartment = view.findViewById(R.id.tv_summary_department);
         tvSummaryDoctor = view.findViewById(R.id.tv_summary_doctor);
@@ -73,20 +80,14 @@ public class JoinFragment extends Fragment {
         tvSummaryPosition = view.findViewById(R.id.tv_summary_position);
         recyclerDoctors = view.findViewById(R.id.recycler_doctors);
         etSymptoms = view.findViewById(R.id.et_symptoms);
-        spinnerPriority = view.findViewById(R.id.spinner_priority);
-        List<String> priorities = new ArrayList<>();
-        priorities.add("Normal");
-        priorities.add("Urgent");
-        priorities.add("Emergency");
-        ArrayAdapter<String> priorityAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, priorities);
-        priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerPriority.setAdapter(priorityAdapter);
+        chipGroupPriority = view.findViewById(R.id.chip_group_priority);
+
         recyclerDoctors.setLayoutManager(new LinearLayoutManager(requireContext()));
         doctorAdapter = new DoctorAdapter((doctor, position) -> {
             selectedDoctor = doctor;
-            tvSummaryDoctor.setText(getString(R.string.doctor_label, doctor.name));
-            tvSummaryTime.setText(getString(R.string.est_wait, doctor.getEstimatedWaitTime()));
-            tvSummaryPosition.setText(getString(R.string.preview_position, doctor.currentQueueLength + 1));
+            tvSummaryDoctor.setText(doctor.name);
+            tvSummaryTime.setText(doctor.getEstimatedWaitTime() + " min");
+            tvSummaryPosition.setText("Queue Position: " + (doctor.currentQueueLength + 1));
             btnJoin.setEnabled(true);
         });
         recyclerDoctors.setAdapter(doctorAdapter);
@@ -97,6 +98,7 @@ public class JoinFragment extends Fragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, initialDeptList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDepartments.setAdapter(adapter);
+
         spinnerDepartments.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -104,26 +106,28 @@ public class JoinFragment extends Fragment {
                 if (valid) {
                     Department selectedDept = departments.get(position - 1);
                     selectedDepartmentId = selectedDept.id;
-                    tvSummaryDepartment.setText(getString(R.string.department_label, selectedDept.name));
+                    tvSummaryDepartment.setText(selectedDept.name);
                     loadDoctorsForDepartment(selectedDept.id);
                 } else {
                     selectedDepartmentId = null;
-                    tvSummaryDepartment.setText(getString(R.string.department_label_empty));
+                    tvSummaryDepartment.setText("Department");
                     currentDoctors.clear();
                     doctorAdapter.setItems(currentDoctors);
                 }
                 selectedDoctor = null;
-                tvSummaryDoctor.setText(getString(R.string.doctor_label_empty));
-                tvSummaryTime.setText(getString(R.string.est_wait_empty));
-                tvSummaryPosition.setText(getString(R.string.preview_position_empty));
+                tvSummaryDoctor.setText("Select a Doctor");
+                tvSummaryTime.setText("-- min");
+                tvSummaryPosition.setText("Wait Time");
                 btnJoin.setEnabled(false);
             }
+
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {
                 selectedDepartmentId = null;
                 btnJoin.setEnabled(false);
             }
         });
+
         btnJoin.setOnClickListener(v -> {
             if (selectedDoctor == null) {
                 new AlertDialog.Builder(requireContext()).setTitle(R.string.select_a_doctor_title).setMessage(R.string.select_a_doctor_message).setPositiveButton(android.R.string.ok, null).show();
@@ -132,6 +136,7 @@ public class JoinFragment extends Fragment {
             showConfirmation();
         });
     }
+
     private void loadDepartments() {
         database.child("departments").addValueEventListener(new ValueEventListener() {
             @Override
@@ -146,12 +151,14 @@ public class JoinFragment extends Fragment {
                 }
                 onDepartmentsLoaded(departments);
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 onError(error.getMessage());
             }
         });
     }
+
     public void onDepartmentsLoaded(List<Department> loadedDepartments) {
         if (!isAdded()) return;
         departments.clear();
@@ -163,9 +170,12 @@ public class JoinFragment extends Fragment {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, deptNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        Spinner spinnerDepartments = requireView().findViewById(R.id.spinner_departments);
-        spinnerDepartments.setAdapter(adapter);
+        if (isAdded() && getView() != null) {
+             Spinner spinner = getView().findViewById(R.id.spinner_departments);
+             if (spinner != null) spinner.setAdapter(adapter);
+        }
     }
+
     private void loadDoctorsForDepartment(String departmentId) {
         if (departmentId == null) {
             currentDoctors.clear();
@@ -185,22 +195,24 @@ public class JoinFragment extends Fragment {
                 }
                 onDoctorsLoaded(doctors);
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 onError("Failed to load doctors: " + error.getMessage());
             }
         });
     }
+
     public void onDoctorsLoaded(List<Doctor> loadedDoctors) {
         if (!isAdded()) return;
         currentDoctors.clear();
         currentDoctors.addAll(loadedDoctors);
         loadQueueLengthsForDoctors(loadedDoctors);
     }
+
     private void loadQueueLengthsForDoctors(List<Doctor> doctors) {
         if (doctors == null || doctors.isEmpty()) {
             doctorAdapter.setItems(currentDoctors);
-            recyclerDoctors.scrollToPosition(0);
             return;
         }
         Calendar cal = Calendar.getInstance();
@@ -228,11 +240,13 @@ public class JoinFragment extends Fragment {
                     currentDoctors.sort(Comparator.comparingInt(Doctor::getEstimatedWaitTime));
                     doctorAdapter.setItems(currentDoctors);
                 }
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {}
             });
         }
     }
+
     private void showConfirmation() {
         String departmentName = "";
         for (Department dept : departments) {
@@ -242,19 +256,29 @@ public class JoinFragment extends Fragment {
             }
         }
         String symptoms = etSymptoms.getText().toString().trim();
-        String priority = spinnerPriority.getSelectedItem().toString();
+        
+        final String priority;
+        int checkedChipId = chipGroupPriority.getCheckedChipId();
+        if (checkedChipId != View.NO_ID) {
+            Chip chip = requireView().findViewById(checkedChipId);
+            priority = chip.getText().toString();
+        } else {
+            priority = "Normal";
+        }
+
         StringBuilder msgBuilder = new StringBuilder();
-        msgBuilder.append(getString(R.string.department_label, departmentName)).append("\n");
-        msgBuilder.append(getString(R.string.doctor_label, selectedDoctor == null ? "" : selectedDoctor.name)).append("\n");
-        msgBuilder.append(getString(R.string.est_wait, selectedDoctor == null ? 0 : selectedDoctor.getEstimatedWaitTime()));
+        msgBuilder.append("Department: ").append(departmentName).append("\n");
+        msgBuilder.append("Doctor: ").append(selectedDoctor == null ? "" : selectedDoctor.name).append("\n");
+        msgBuilder.append("Est. Wait: ").append(selectedDoctor == null ? 0 : selectedDoctor.getEstimatedWaitTime()).append(" min");
         if (!symptoms.isEmpty()) {
             msgBuilder.append("\nSymptoms: ").append(symptoms);
         }
         msgBuilder.append("\nPriority: ").append(priority);
         String msg = msgBuilder.toString();
-        new AlertDialog.Builder(requireContext()).setTitle(R.string.confirm_join_title).setMessage(msg).setPositiveButton("Join", (d, w) -> performJoin()).setNegativeButton(android.R.string.cancel, null).show();
+        new AlertDialog.Builder(requireContext()).setTitle(R.string.confirm_join_title).setMessage(msg).setPositiveButton("Join", (d, w) -> performJoin(priority)).setNegativeButton(android.R.string.cancel, null).show();
     }
-    private void performJoin() {
+
+    private void performJoin(String priority) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (selectedDoctor == null) {
             new AlertDialog.Builder(requireContext()).setTitle("Error").setMessage("Please select a doctor").setPositiveButton(android.R.string.ok, null).show();
@@ -267,7 +291,7 @@ public class JoinFragment extends Fragment {
         }
         loadingDialog = new AlertDialog.Builder(requireContext()).setTitle("Joining Queue").setMessage("Please wait...").setCancelable(false).create();
         loadingDialog.show();
-        String priority = spinnerPriority.getSelectedItem().toString();
+        
         DatabaseReference doctorDayRef = database.child("doctors").child(selectedDoctor.id).child("dailyQueue").child(today);
         doctorDayRef.child("count").get().addOnCompleteListener(task -> {
             int currentCount = 0;
@@ -302,6 +326,7 @@ public class JoinFragment extends Fragment {
             }
         });
     }
+
     private long computeVisitingTimeMillis(Doctor doctor, int position, String dateStr) {
         String start = doctor.startTime != null && !doctor.startTime.isEmpty() ? doctor.startTime : "09:00";
         int avgMin = Math.max(1, doctor.avgTimeMinutes);
@@ -317,6 +342,7 @@ public class JoinFragment extends Fragment {
             return System.currentTimeMillis();
         }
     }
+
     private void onQueueJoined(int newPosition) {
         if (!isAdded()) return;
         if (loadingDialog != null) {
@@ -332,6 +358,7 @@ public class JoinFragment extends Fragment {
                         .replace(R.id.frame, new HomeFragment())
                         .commitNow());
     }
+
     private void onError(String error) {
         if (!isAdded()) return;
         if (loadingDialog != null) {

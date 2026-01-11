@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#0D47A1</color>
+    <color name="colorPrimary">#2962FF</color>
     <color name="colorOnPrimary">#FFFFFF</color>
     <color name="bgLight">#F5F5F5</color>
     <color name="cardBackground">#FFFFFF</color>
@@ -10,4 +10,12 @@
     <color name="progressBackground">#E0E0E0</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="brand_primary">#2962FF</color>
+    <color name="brand_secondary">#0039CB</color>
+    <color name="brand_background_start">#E3F2FD</color>
+    <color name="brand_background_end">#FFFFFF</color>
+    <color name="input_surface">#FFFFFF</color>
+    <color name="input_stroke">#E0E0E0</color>
+    <color name="admin_primary">#263238</color>
+    <color name="admin_background_start">#ECEFF1</color>
 </resources>
