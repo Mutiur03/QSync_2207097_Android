@@ -131,7 +131,7 @@ QSync Android App
 │   ├── HistoryFragment
 │   └── ProfileFragment
 └── Admin Portal (AdminDashboard)
-    ├── AdminHome
+    ├── AdminHomeFragment
     ├── ManageFragment
     │   ├── ManageDepartmentsActivity
     │   └── ManageDoctorsActivity
